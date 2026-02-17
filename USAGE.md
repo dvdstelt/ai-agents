@@ -1,90 +1,130 @@
 # Claude Code in Docker
 
-## Build the image
+## Initial Setup (one-time)
 
-Run this once from the `docker-master` folder:
+### 1. Build the image
 
-```bash
+From the `docker-master` folder:
+
+```cmd
+cd D:\work\docker-master
 docker build -t claude-code .
 ```
 
-Rebuild anytime you change the Dockerfile to pick up new tools.
+### 2. Add docker-master to your PATH
 
-## Set your API key
-
-Set the `ANTHROPIC_API_KEY` environment variable so the container can authenticate.
-
-**Powershell (current session):**
-
-```powershell
-$env:ANTHROPIC_API_KEY = "sk-ant-..."
-```
-
-**Powershell (permanent, user-level):**
-
-```powershell
-[Environment]::SetEnvironmentVariable("ANTHROPIC_API_KEY", "sk-ant-...", "User")
-```
-
-**CMD (permanent):**
-
-```cmd
-setx ANTHROPIC_API_KEY "sk-ant-..."
-```
-
-After using `setx` or the permanent Powershell method, restart your terminal.
-
-## Start Claude Code
-
-Navigate to the project folder you want Claude to work on, then run:
-
-**Using the .bat file:**
-
-```cmd
-D:\work\docker-master\claude-code.bat
-```
-
-**Directly with docker (from any shell):**
-
-```bash
-docker run -it --rm -e ANTHROPIC_API_KEY=%ANTHROPIC_API_KEY% -v "%cd%:/workspace" claude-code
-```
-
-**From Powershell:**
-
-```powershell
-docker run -it --rm -e ANTHROPIC_API_KEY=$env:ANTHROPIC_API_KEY -v "${PWD}:/workspace" claude-code
-```
-
-## Add the .bat to your PATH
-
-To run `claude-code` from anywhere without typing the full path:
+So you can run `cc` and `ccc` from any folder:
 
 1. Open **Start > Edit environment variables for your account**
 2. Edit the `Path` variable
 3. Add `D:\work\docker-master`
 4. Restart your terminal
 
-Now you can just type `claude-code` from any project folder.
+### 3. First run and configuration
 
-## Tips
+Start a temporary container to configure Claude (theme, login, disclaimer):
+
+```cmd
+docker run -it --name claude-setup -v "%USERPROFILE%\.claude:/root/.claude" claude-code
+```
+
+Inside the container:
+1. Select **Dark mode** (or your preference)
+2. Choose **Claude account with subscription** as login method
+3. Open the URL in your browser to authenticate
+4. Press Enter after login succeeds
+5. Accept the disclaimer
+6. Trust the folder
+
+Then exit Claude (`Ctrl+C` or `/exit`) and commit the configured state:
+
+```cmd
+docker commit claude-setup claude-code
+docker rm claude-setup
+```
+
+This bakes your preferences into the image so you won't be asked again.
+
+### 4. Environment variables (optional)
+
+If your projects need environment variables (API keys, secrets, etc.), create a `.env` file in the `docker-master` folder:
+
+```
+BITVAVO_API_KEY=...
+BITVAVO_API_SECRET=...
+GOOGLE_CLIENT_ID=...
+```
+
+This file is automatically loaded into every container.
+
+## Usage
+
+Navigate to any project folder, then:
+
+| Command | What it does |
+|---|---|
+| `cc` | Start a new Claude session for the current folder |
+| `ccc` | Continue the previous session for the current folder |
+
+Both commands are available as `.bat` (CMD) and `.ps1` (PowerShell) scripts.
+
+### PowerShell execution policy
+
+If PowerShell blocks `.ps1` scripts, run this once:
+
+```powershell
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+## How it works
 
 - **Files are shared, tools are not.** Only the mounted folder is visible to the container. All runtimes (.NET, Ruby, Node, Python) live inside the container.
 - **Changes to your files persist.** Anything Claude writes to `/workspace` is written directly to your host folder.
-- **Installed packages are lost on exit.** The `--rm` flag deletes the container when you exit. If Claude installs something useful (e.g. a new gem or pip package), add it to the Dockerfile and rebuild.
-- **Save a modified container.** If you want to keep what Claude installed without editing the Dockerfile, skip `--rm` and commit afterward:
-  ```bash
-  docker run -it -e ANTHROPIC_API_KEY=%ANTHROPIC_API_KEY% -v "%cd%:/workspace" --name claude-session claude-code
-  # after exiting:
-  docker commit claude-session claude-code
-  docker rm claude-session
-  ```
+- **Containers persist for `ccc`.** Each folder gets a named container (e.g. `claude-my-project`). Running `cc` replaces the old container; `ccc` reattaches to it.
+- **Auth and settings persist.** Your `%USERPROFILE%\.claude` and `%USERPROFILE%\.config` folders are mounted into every container.
+- **Environment variables are shared.** The `.env` file in `docker-master` is loaded into every container automatically.
 - **Multiple projects at once.** You can run multiple containers simultaneously, each mounted to a different folder. They are fully isolated from each other.
-- **Git SSH keys.** If you need Git over SSH inside the container, mount your SSH directory:
-  ```bash
-  docker run -it --rm -v "%USERPROFILE%\.ssh:/root/.ssh:ro" -v "%cd%:/workspace" claude-code
-  ```
-- **Persist Claude config.** To keep Claude's settings and auth across sessions:
-  ```bash
-  docker run -it --rm -v "%USERPROFILE%\.claude:/root/.claude" -v "%cd%:/workspace" claude-code
-  ```
+
+## Maintenance
+
+### Add a new tool to the image
+
+1. Edit the `Dockerfile` to add the tool (e.g. add `golang` to an `apt-get install` line)
+2. Rebuild: `docker build -t claude-code .`
+
+### Save changes to the image (docker commit)
+
+Anything installed or configured inside a container is lost when the container is removed — unless you commit it back to the image. This is how we baked in the Claude settings during initial setup, and you can use the same pattern anytime.
+
+The general workflow:
+
+```cmd
+REM 1. Start a named container (without --rm so it sticks around)
+docker run -it --name my-temp-container claude-code
+
+REM 2. Do whatever you need inside (install tools, change config, etc.)
+REM    Then exit the container.
+
+REM 3. Save the container's state back into the image
+docker commit my-temp-container claude-code
+
+REM 4. Clean up the temporary container
+docker rm my-temp-container
+```
+
+After committing, every new container started from `claude-code` will have those changes.
+
+**Examples of when to use this:**
+- Claude installed a tool (e.g. Ruby gem, pip package) you want to keep
+- You changed a system config inside the container
+- You want to update Claude Code itself (`npm update -g @anthropic-ai/claude-code` inside the container, then commit)
+
+**When NOT to use this** — if the tool is something you'll always need, add it to the `Dockerfile` instead and rebuild. That way the image is reproducible from scratch.
+
+### Git SSH keys
+
+If you need Git over SSH inside the container, add this volume mount to the `docker run` commands in `cc.bat`/`cc.ps1`:
+
+```
+-v "%USERPROFILE%\.ssh:/root/.ssh:ro"
+```

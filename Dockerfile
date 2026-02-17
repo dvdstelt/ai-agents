@@ -45,8 +45,8 @@ RUN npm install -g \
     hugo-extended \
     @11ty/eleventy
 
-# ── Claude Code (native installer) ──
-RUN curl -fsSL https://claude.ai/install.sh | sh
+# ── Claude Code ──
+RUN npm install -g @anthropic-ai/claude-code
 
 WORKDIR /workspace
 ENTRYPOINT ["claude"]

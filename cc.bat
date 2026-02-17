@@ -29,7 +29,8 @@ if "%~1"=="--continue" (
     docker container inspect %CONTAINER_NAME% >nul 2>&1
     if not errorlevel 1 (
         echo Continuing previous session...
-        docker start -ai %CONTAINER_NAME%
+        docker start %CONTAINER_NAME%
+        docker exec -it %CONTAINER_NAME% claude --continue
     ) else (
         echo No previous session found, starting fresh...
         docker run -it ^
@@ -44,8 +45,20 @@ if "%~1"=="--continue" (
     goto :eof
 )
 
+REM Handle /bin/bash: only proceed if the container already exists
+if "%~1"=="/bin/bash" (
+    docker container inspect %CONTAINER_NAME% >nul 2>&1
+    if errorlevel 1 (
+        echo Container %CONTAINER_NAME% does not exist.
+        goto :eof
+    )
+    docker start %CONTAINER_NAME%
+    docker exec -it %CONTAINER_NAME% /bin/bash
+    goto :eof
+)
+
 REM Remove old container for this folder if it exists
-docker rm %CONTAINER_NAME% >nul 2>&1
+docker rm -f %CONTAINER_NAME% >nul 2>&1
 
 docker run -it ^
     --name %CONTAINER_NAME% ^

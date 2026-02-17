@@ -30,7 +30,8 @@ if ($args -contains "--continue") {
     $exists = docker container inspect $containerName 2>$null
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Continuing previous session..."
-        docker start -ai $containerName
+        docker start $containerName
+        docker exec -it $containerName claude --continue
     } else {
         Write-Host "No previous session found, starting fresh..."
         docker run -it `
@@ -45,8 +46,20 @@ if ($args -contains "--continue") {
     exit
 }
 
+# Handle /bin/bash: only proceed if the container already exists
+if ($args -contains "/bin/bash") {
+    docker container inspect $containerName 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Container $containerName does not exist."
+        exit
+    }
+    docker start $containerName
+    docker exec -it $containerName /bin/bash
+    exit
+}
+
 # Remove old container for this folder if it exists
-docker rm $containerName 2>$null | Out-Null
+docker rm -f $containerName 2>$null | Out-Null
 
 docker run -it `
     --name $containerName `

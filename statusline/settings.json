@@ -1,0 +1,8 @@
+{
+  "autoUpdatesChannel": "latest",
+  "forceLoginMethod": "claudeai",
+  "statusLine": {
+    "type": "command",
+    "command": "sh /root/.claude/statusline-command.sh"
+  }
+}

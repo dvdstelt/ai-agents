@@ -36,6 +36,7 @@ if ($args -contains "--continue") {
         docker run -it `
             --name $containerName `
             @envFlag `
+            -e "HOST_WORKSPACE=$workDir" `
             -v "$env:USERPROFILE\.claude:/root/.claude" `
             -v "$env:USERPROFILE\.config:/root/.config" `
             -v "${workDir}:/workspace" `
@@ -50,6 +51,7 @@ docker rm $containerName 2>$null | Out-Null
 docker run -it `
     --name $containerName `
     @envFlag `
+    -e "HOST_WORKSPACE=$workDir" `
     -v "$env:USERPROFILE\.claude:/root/.claude" `
     -v "$env:USERPROFILE\.config:/root/.config" `
     -v "${workDir}:/workspace" `

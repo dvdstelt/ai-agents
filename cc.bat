@@ -35,6 +35,7 @@ if "%~1"=="--continue" (
         docker run -it ^
             --name %CONTAINER_NAME% ^
             %ENV_FLAG% ^
+            -e HOST_WORKSPACE=%cd% ^
             -v "%USERPROFILE%\.claude:/root/.claude" ^
             -v "%USERPROFILE%\.config:/root/.config" ^
             -v "%cd%:/workspace" ^
@@ -49,6 +50,7 @@ docker rm %CONTAINER_NAME% >nul 2>&1
 docker run -it ^
     --name %CONTAINER_NAME% ^
     %ENV_FLAG% ^
+    -e HOST_WORKSPACE=%cd% ^
     -v "%USERPROFILE%\.claude:/root/.claude" ^
     -v "%USERPROFILE%\.config:/root/.config" ^
     -v "%cd%:/workspace" ^

@@ -28,7 +28,14 @@ Start a temporary container to configure Claude (theme, login, disclaimer):
 docker run -it --name claude-setup -v "%USERPROFILE%\.claude:/root/.claude" claude-code
 ```
 
+If the container already exists:
+
+```
+docker start -ai claude-setup
+```
+
 Inside the container:
+
 1. Select **Dark mode** (or your preference)
 2. Choose **Claude account with subscription** as login method
 3. Open the URL in your browser to authenticate

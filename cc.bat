@@ -13,6 +13,9 @@ REM Create a container name from the folder name (replace spaces/special chars)
 for %%I in ("%cd%") do set "FOLDER_NAME=%%~nxI"
 set "CONTAINER_NAME=claude-%FOLDER_NAME%"
 
+REM Get the parent directory (mounted as /workspace so worktrees are visible on disk)
+for %%I in ("%cd%\..") do set "PARENT_DIR=%%~fI"
+
 REM Check for .env file in docker-master folder
 set "ENV_FLAG="
 if exist "%~dp0.env" (
@@ -20,7 +23,7 @@ if exist "%~dp0.env" (
     echo Loading .env file from %~dp0
 )
 
-echo Mounting: %cd%
+echo Mounting: %PARENT_DIR% (project: %FOLDER_NAME%)
 echo Container: %CONTAINER_NAME%
 echo.
 
@@ -40,7 +43,7 @@ if "%~1"=="--continue" (
             -e CONTAINER_WORKDIR=/workspace/%FOLDER_NAME% ^
             -v "%USERPROFILE%\.claude:/root/.claude" ^
             -v "%USERPROFILE%\.config:/root/.config" ^
-            -v "%cd%:/workspace/%FOLDER_NAME%" ^
+            -v "%PARENT_DIR%:/workspace" ^
             -w "/workspace/%FOLDER_NAME%" ^
             claude-code
     )
@@ -69,6 +72,6 @@ docker run -it ^
     -e CONTAINER_WORKDIR=/workspace/%FOLDER_NAME% ^
     -v "%USERPROFILE%\.claude:/root/.claude" ^
     -v "%USERPROFILE%\.config:/root/.config" ^
-    -v "%cd%:/workspace/%FOLDER_NAME%" ^
+    -v "%PARENT_DIR%:/workspace" ^
     -w "/workspace/%FOLDER_NAME%" ^
     claude-code %*

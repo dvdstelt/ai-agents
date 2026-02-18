@@ -1,0 +1,41 @@
+#!/bin/bash
+# Creates a git worktree with relative paths so it works both inside the
+# Docker container (/workspace/…) and on the Windows host (D:\…).
+#
+# Usage (run from inside the main repo):
+#   git-wtadd <worktree-path> [<branch>] [extra git-worktree-add flags]
+#
+# Example:
+#   cd /workspace/NServiceBus
+#   git-wtadd /workspace/NServiceBus@feature-x feature-x
+
+set -e
+
+if [ -z "$1" ]; then
+    echo "Usage: git-wtadd <worktree-path> [<branch>] [extra flags]"
+    exit 1
+fi
+
+WORKTREE_PATH="$1"
+shift
+
+# Create the worktree normally
+git worktree add "$WORKTREE_PATH" "$@"
+
+# Resolve absolute paths
+WORKTREE_ABS=$(realpath "$WORKTREE_PATH")
+WORKTREE_NAME=$(basename "$WORKTREE_ABS")
+MAIN_GIT_DIR=$(git rev-parse --git-dir)
+MAIN_GIT_ABS=$(realpath "$MAIN_GIT_DIR")
+WORKTREE_GITDIR="$MAIN_GIT_ABS/worktrees/$WORKTREE_NAME"
+
+# Rewrite the .git file in the worktree (points back to main repo) —
+# this is the file the Windows host Git client reads, so it must be relative.
+REL_TO_MAIN=$(realpath --relative-to="$WORKTREE_ABS" "$WORKTREE_GITDIR")
+echo "gitdir: $REL_TO_MAIN" > "$WORKTREE_ABS/.git"
+
+# Keep the gitdir file in the main repo absolute — Git uses this internally
+# for commands like 'git worktree list' and 'git worktree remove'.
+# It already contains the correct absolute path from 'git worktree add'.
+
+echo "Worktree created with relative paths: $WORKTREE_PATH"

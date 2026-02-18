@@ -14,6 +14,9 @@ $folderName = Split-Path -Leaf $workDir
 $containerName = "claude-$folderName"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
+# Get the parent directory (mounted as /workspace so worktrees are visible on disk)
+$parentDir = Split-Path -Parent $workDir
+
 # Check for .env file in docker-master folder
 $envFlag = @()
 if (Test-Path "$scriptDir\.env") {
@@ -21,7 +24,7 @@ if (Test-Path "$scriptDir\.env") {
     Write-Host "Loading .env file from $scriptDir"
 }
 
-Write-Host "Mounting: $workDir"
+Write-Host "Mounting: $parentDir (project: $folderName)"
 Write-Host "Container: $containerName"
 Write-Host ""
 
@@ -41,7 +44,7 @@ if ($args -contains "--continue") {
             -e "CONTAINER_WORKDIR=/workspace/$folderName" `
             -v "$env:USERPROFILE\.claude:/root/.claude" `
             -v "$env:USERPROFILE\.config:/root/.config" `
-            -v "${workDir}:/workspace/$folderName" `
+            -v "${parentDir}:/workspace" `
             -w "/workspace/$folderName" `
             claude-code
     }
@@ -70,6 +73,6 @@ docker run -it `
     -e "CONTAINER_WORKDIR=/workspace/$folderName" `
     -v "$env:USERPROFILE\.claude:/root/.claude" `
     -v "$env:USERPROFILE\.config:/root/.config" `
-    -v "${workDir}:/workspace/$folderName" `
+    -v "${parentDir}:/workspace" `
     -w "/workspace/$folderName" `
     claude-code @args

@@ -53,6 +53,10 @@ RUN npm install -g \
     hugo-extended \
     @11ty/eleventy
 
+# ── Git worktree helper (rewrites paths to relative for cross-environment use) ──
+COPY git-wtadd /usr/local/bin/git-wtadd
+RUN sed -i 's/\r$//' /usr/local/bin/git-wtadd && chmod +x /usr/local/bin/git-wtadd
+
 # ── Claude Code ──
 RUN npm install -g @anthropic-ai/claude-code
 

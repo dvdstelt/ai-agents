@@ -19,10 +19,10 @@ if [ -n "$HOST_WORKSPACE" ]; then
   # Escape backslashes in HOST_WORKSPACE so sed treats them as literals,
   # not as escape sequences in the replacement string.
   escaped_host_workspace=$(printf '%s' "$HOST_WORKSPACE" | sed 's/\\/\\\\/g')
-  cwd=$(echo "$cwd" | sed "s|^/workspace|$escaped_host_workspace|")
+  cwd=$(printf '%s\n' "$cwd" | sed "s|^/workspace|$escaped_host_workspace|")
 fi
 home="$HOME"
-short_cwd=$(echo "$cwd" | sed "s|^$home|~|")
+short_cwd=$(printf '%s\n' "$cwd" | sed "s|^$home|~|")
 
 printf '\033[0;36m%s\033[0m  \033[0;33m%s\033[0m  \033[0;32m%s\033[0m' \
   "$model" "$short_cwd" "$ctx_segment"

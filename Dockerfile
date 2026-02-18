@@ -18,6 +18,10 @@ RUN apt-get update && apt-get install -y \
     less \
     vim-tiny \
     build-essential \
+    just \
+    procps \
+    findutils \
+    diffutils \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Python (scripting, automation, quick tools) ──
@@ -32,6 +36,10 @@ RUN curl -fsSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 
     && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
 ENV DOTNET_ROOT=/usr/share/dotnet
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
+ENV PATH="$PATH:/root/.dotnet/tools"
+
+# ── .NET global tools ──
+RUN dotnet tool install -g dotnet-outdated-tool
 
 # ── Ruby + Jekyll ──
 RUN apt-get update && apt-get install -y \

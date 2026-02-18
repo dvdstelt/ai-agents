@@ -25,7 +25,7 @@ So you can run `cc` and `ccc` from any folder:
 Start a temporary container to configure Claude (theme, login, disclaimer):
 
 ```cmd
-docker run -it --name claude-setup -v "%USERPROFILE%\.claude:/root/.claude" claude-code
+docker run -it --name claude-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "D:\temp\claude:/workspace" claude-code
 ```
 
 If the container already exists:

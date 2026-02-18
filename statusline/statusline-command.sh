@@ -14,12 +14,13 @@ else
   ctx_segment="no messages yet"
 fi
 
-# Replace /workspace with HOST_WORKSPACE if set, then shorten home to ~
+# Replace container workdir with HOST_WORKSPACE if set, then shorten home to ~
 if [ -n "$HOST_WORKSPACE" ]; then
   # Escape backslashes in HOST_WORKSPACE so sed treats them as literals,
   # not as escape sequences in the replacement string.
   escaped_host_workspace=$(printf '%s' "$HOST_WORKSPACE" | sed 's/\\/\\\\/g')
-  cwd=$(printf '%s\n' "$cwd" | sed "s|^/workspace|$escaped_host_workspace|")
+  container_workdir="${CONTAINER_WORKDIR:-/workspace}"
+  cwd=$(printf '%s\n' "$cwd" | sed "s|^$container_workdir|$escaped_host_workspace|")
 fi
 home="$HOME"
 short_cwd=$(printf '%s\n' "$cwd" | sed "s|^$home|~|")

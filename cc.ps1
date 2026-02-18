@@ -38,9 +38,11 @@ if ($args -contains "--continue") {
             --name $containerName `
             @envFlag `
             -e "HOST_WORKSPACE=$workDir" `
+            -e "CONTAINER_WORKDIR=/workspace/$folderName" `
             -v "$env:USERPROFILE\.claude:/root/.claude" `
             -v "$env:USERPROFILE\.config:/root/.config" `
-            -v "${workDir}:/workspace" `
+            -v "${workDir}:/workspace/$folderName" `
+            -w "/workspace/$folderName" `
             claude-code
     }
     exit
@@ -65,7 +67,9 @@ docker run -it `
     --name $containerName `
     @envFlag `
     -e "HOST_WORKSPACE=$workDir" `
+    -e "CONTAINER_WORKDIR=/workspace/$folderName" `
     -v "$env:USERPROFILE\.claude:/root/.claude" `
     -v "$env:USERPROFILE\.config:/root/.config" `
-    -v "${workDir}:/workspace" `
+    -v "${workDir}:/workspace/$folderName" `
+    -w "/workspace/$folderName" `
     claude-code @args

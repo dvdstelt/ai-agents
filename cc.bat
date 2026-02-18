@@ -37,9 +37,11 @@ if "%~1"=="--continue" (
             --name %CONTAINER_NAME% ^
             %ENV_FLAG% ^
             -e HOST_WORKSPACE=%cd% ^
+            -e CONTAINER_WORKDIR=/workspace/%FOLDER_NAME% ^
             -v "%USERPROFILE%\.claude:/root/.claude" ^
             -v "%USERPROFILE%\.config:/root/.config" ^
-            -v "%cd%:/workspace" ^
+            -v "%cd%:/workspace/%FOLDER_NAME%" ^
+            -w "/workspace/%FOLDER_NAME%" ^
             claude-code
     )
     goto :eof
@@ -64,7 +66,9 @@ docker run -it ^
     --name %CONTAINER_NAME% ^
     %ENV_FLAG% ^
     -e HOST_WORKSPACE=%cd% ^
+    -e CONTAINER_WORKDIR=/workspace/%FOLDER_NAME% ^
     -v "%USERPROFILE%\.claude:/root/.claude" ^
     -v "%USERPROFILE%\.config:/root/.config" ^
-    -v "%cd%:/workspace" ^
+    -v "%cd%:/workspace/%FOLDER_NAME%" ^
+    -w "/workspace/%FOLDER_NAME%" ^
     claude-code %*

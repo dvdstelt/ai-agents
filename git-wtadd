@@ -34,8 +34,23 @@ WORKTREE_GITDIR="$MAIN_GIT_ABS/worktrees/$WORKTREE_NAME"
 REL_TO_MAIN=$(realpath --relative-to="$WORKTREE_ABS" "$WORKTREE_GITDIR")
 echo "gitdir: $REL_TO_MAIN" > "$WORKTREE_ABS/.git"
 
-# Keep the gitdir file in the main repo absolute — Git uses this internally
-# for commands like 'git worktree list' and 'git worktree remove'.
-# It already contains the correct absolute path from 'git worktree add'.
+# Rewrite the gitdir file in the main repo to use the Windows host path.
+# Regular git operations in the worktree don't use this file — they follow
+# the relative .git file above. The gitdir file is only read by worktree
+# management commands (git worktree list/prune) and tools like GitKraken.
+# Writing the Windows path makes the host the source of truth.
+if [ -n "$HOST_WORKSPACE" ] && [ -n "$CONTAINER_WORKDIR" ]; then
+    HOST_WS=$(echo "$HOST_WORKSPACE" | tr '\\' '/')
+    HOST_PARENT=$(dirname "$HOST_WS")
+    CONTAINER_PARENT=$(dirname "$CONTAINER_WORKDIR")
 
-echo "Worktree created with relative paths: $WORKTREE_PATH"
+    LINUX_GITDIR=$(cat "$WORKTREE_GITDIR/gitdir")
+    WIN_GITDIR="${LINUX_GITDIR/#$CONTAINER_PARENT/$HOST_PARENT}"
+
+    echo "$WIN_GITDIR" > "$WORKTREE_GITDIR/gitdir"
+    echo "Worktree created: $WORKTREE_PATH"
+    echo "  Host gitdir: $WIN_GITDIR"
+else
+    echo "Worktree created: $WORKTREE_PATH"
+    echo "  Warning: HOST_WORKSPACE/CONTAINER_WORKDIR not set, gitdir left as container path"
+fi

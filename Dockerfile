@@ -18,11 +18,14 @@ RUN apt-get update && apt-get install -y \
     less \
     vim-tiny \
     build-essential \
-    just \
     procps \
     findutils \
     diffutils \
+    libicu-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# ── Just (task runner, not in Debian repos) ──
+RUN curl -fsSL https://just.systems/install.sh | bash -s -- --to /usr/local/bin
 
 # ── Python (scripting, automation, quick tools) ──
 RUN apt-get update && apt-get install -y \
@@ -53,12 +56,15 @@ RUN npm install -g \
     hugo-extended \
     @11ty/eleventy
 
-# ── Git worktree helper (rewrites paths to relative for cross-environment use) ──
+# ── Helper scripts ──
 COPY git-wtadd /usr/local/bin/git-wtadd
-RUN sed -i 's/\r$//' /usr/local/bin/git-wtadd && chmod +x /usr/local/bin/git-wtadd
+COPY fix-plugin-paths.py /usr/local/bin/fix-plugin-paths.py
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/git-wtadd /usr/local/bin/fix-plugin-paths.py /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/git-wtadd /usr/local/bin/entrypoint.sh
 
 # ── Claude Code ──
 RUN npm install -g @anthropic-ai/claude-code
 
 WORKDIR /workspace
-ENTRYPOINT ["claude"]
+ENTRYPOINT ["entrypoint.sh"]

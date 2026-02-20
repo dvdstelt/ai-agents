@@ -11,6 +11,12 @@ cd D:\git\dvdstelt\claude-master
 docker build -t claude-code .
 ```
 
+or for a full rebuild without cache use:
+
+```
+docker build --no-cache -t claude-code .
+```
+
 ### 2. Add claude-master to your PATH
 
 So you can run `cc` and `ccc` from any folder:
@@ -138,40 +144,11 @@ D:\git\dvdstelt\my-project\
 D:\git\dvdstelt\my-project@feature-x\
 ```
 
-Always use `git-wtadd` (included in the image) instead of `git worktree add`:
+Always use `git-wtadd` (included in the image) instead of `git worktree add`. It rewrites worktree metadata to use relative paths so your Windows Git client can open them too:
 
 ```bash
 cd /workspace/my-project
 git-wtadd /workspace/my-project@feature-x feature-x
-```
-
-`git-wtadd` does two things to make worktrees work cross-platform:
-
-1. **Relative `.git` file** — the `.git` file in the worktree root uses a relative path, so basic git operations (`status`, `commit`, `log`, `push`, etc.) work on both Linux and Windows.
-2. **Windows host path in `gitdir`** — the `gitdir` file inside `.git/worktrees/<name>/` is rewritten to the Windows host path. This makes `git worktree list`, GitKraken, and other Windows tools recognize the worktree natively.
-
-### Container-side limitations
-
-Because the `gitdir` file contains a Windows path, some worktree management commands don't work **inside the container**:
-
-- `git worktree list` — shows Windows paths (cosmetic, harmless)
-- `git worktree remove` — fails because it can't resolve the Windows path; use manual cleanup instead:
-  ```bash
-  rm -rf /workspace/my-project@feature-x
-  rm -rf /workspace/my-project/.git/worktrees/my-project@feature-x
-  git branch -D feature-x   # if you also want to delete the branch
-  ```
-- `git gc` — automatic gc is disabled inside the container (`gc.auto=0`) to prevent it from incorrectly pruning worktree metadata
-
-Regular git operations inside the worktree (`status`, `commit`, `build`, `test`, etc.) work normally — they don't use the `gitdir` file.
-
-### Merging a worktree branch
-
-Merge from the **main checkout**, not from the worktree. Git doesn't allow the same branch to be checked out in two places:
-
-```bash
-# From the main checkout (on main)
-git merge feature-x
 ```
 
 ## Maintenance

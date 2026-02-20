@@ -11,7 +11,7 @@
 # Create a container name from the folder name
 $workDir = (Get-Location).Path
 $folderName = Split-Path -Leaf $workDir
-$containerName = "claude-$folderName"
+$containerName = "claude-$($folderName -replace '@', '-')"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # Get the parent directory (mounted as /workspace so worktrees are visible on disk)

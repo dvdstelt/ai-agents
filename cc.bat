@@ -12,6 +12,7 @@ REM If a .env file exists in the docker-master folder, it is automatically loade
 REM Create a container name from the folder name (replace spaces/special chars)
 for %%I in ("%cd%") do set "FOLDER_NAME=%%~nxI"
 set "CONTAINER_NAME=claude-%FOLDER_NAME%"
+set "CONTAINER_NAME=%CONTAINER_NAME:@=-%"
 
 REM Get the parent directory (mounted as /workspace so worktrees are visible on disk)
 for %%I in ("%cd%\..") do set "PARENT_DIR=%%~fI"

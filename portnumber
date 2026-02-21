@@ -1,0 +1,10 @@
+#!/bin/bash
+# Shows the host port mapped to container port 1337.
+# Usage: portnumber
+
+if [ -n "$HOST_PORT" ]; then
+    echo "Container port 1337 is mapped to host port $HOST_PORT"
+    echo "Access from Windows: http://localhost:$HOST_PORT"
+else
+    echo "HOST_PORT not set. Port mapping may not be available."
+fi

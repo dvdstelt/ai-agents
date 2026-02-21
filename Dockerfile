@@ -58,10 +58,11 @@ RUN npm install -g \
 
 # ── Helper scripts ──
 COPY git-wtadd /usr/local/bin/git-wtadd
+COPY portnumber /usr/local/bin/portnumber
 COPY fix-plugin-paths.py /usr/local/bin/fix-plugin-paths.py
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN sed -i 's/\r$//' /usr/local/bin/git-wtadd /usr/local/bin/fix-plugin-paths.py /usr/local/bin/entrypoint.sh \
-    && chmod +x /usr/local/bin/git-wtadd /usr/local/bin/entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/git-wtadd /usr/local/bin/portnumber /usr/local/bin/fix-plugin-paths.py /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/git-wtadd /usr/local/bin/portnumber /usr/local/bin/entrypoint.sh
 
 # ── Claude Code ──
 RUN npm install -g @anthropic-ai/claude-code

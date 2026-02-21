@@ -17,6 +17,9 @@ set "CONTAINER_NAME=%CONTAINER_NAME:@=-%"
 REM Get the parent directory (mounted as /workspace so worktrees are visible on disk)
 for %%I in ("%cd%\..") do set "PARENT_DIR=%%~fI"
 
+REM Pick a random host port (20000-52767) for container port 1337
+set /a "HOST_PORT=(%random% %% 10000) + 20000"
+
 REM Check for .env file in docker-master folder
 set "ENV_FLAG="
 if exist "%~dp0.env" (
@@ -42,6 +45,8 @@ if "%~1"=="--continue" (
             %ENV_FLAG% ^
             -e HOST_WORKSPACE=%cd% ^
             -e CONTAINER_WORKDIR=/workspace/%FOLDER_NAME% ^
+            -e HOST_PORT=%HOST_PORT% ^
+            -p %HOST_PORT%:1337 ^
             -v "%USERPROFILE%\.claude:/root/.claude" ^
             -v "%USERPROFILE%\.config:/root/.config" ^
             -v "%PARENT_DIR%:/workspace" ^
@@ -71,6 +76,8 @@ docker run -it ^
     %ENV_FLAG% ^
     -e HOST_WORKSPACE=%cd% ^
     -e CONTAINER_WORKDIR=/workspace/%FOLDER_NAME% ^
+    -e HOST_PORT=%HOST_PORT% ^
+    -p %HOST_PORT%:1337 ^
     -v "%USERPROFILE%\.claude:/root/.claude" ^
     -v "%USERPROFILE%\.config:/root/.config" ^
     -v "%PARENT_DIR%:/workspace" ^

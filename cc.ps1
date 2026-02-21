@@ -17,6 +17,9 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 # Get the parent directory (mounted as /workspace so worktrees are visible on disk)
 $parentDir = Split-Path -Parent $workDir
 
+# Pick a random host port (20000-52767) for container port 1337
+$hostPort = Get-Random -Minimum 20000 -Maximum 52768
+
 # Check for .env file in docker-master folder
 $envFlag = @()
 if (Test-Path "$scriptDir\.env") {
@@ -42,6 +45,8 @@ if ($args -contains "--continue") {
             @envFlag `
             -e "HOST_WORKSPACE=$workDir" `
             -e "CONTAINER_WORKDIR=/workspace/$folderName" `
+            -e "HOST_PORT=$hostPort" `
+            -p "${hostPort}:1337" `
             -v "$env:USERPROFILE\.claude:/root/.claude" `
             -v "$env:USERPROFILE\.config:/root/.config" `
             -v "${parentDir}:/workspace" `
@@ -71,6 +76,8 @@ docker run -it `
     @envFlag `
     -e "HOST_WORKSPACE=$workDir" `
     -e "CONTAINER_WORKDIR=/workspace/$folderName" `
+    -e "HOST_PORT=$hostPort" `
+    -p "${hostPort}:1337" `
     -v "$env:USERPROFILE\.claude:/root/.claude" `
     -v "$env:USERPROFILE\.config:/root/.config" `
     -v "${parentDir}:/workspace" `

@@ -19,8 +19,24 @@ fi
 WORKTREE_PATH="$1"
 shift
 
-# Create the worktree normally
-git worktree add "$WORKTREE_PATH" "$@"
+# If a branch name is given (first non-flag arg) and it doesn't exist locally
+# or as a remote-tracking branch, automatically add -b to create it.
+BRANCH=""
+REMAINING=()
+for arg in "$@"; do
+    if [ -z "$BRANCH" ] && [[ "$arg" != -* ]]; then
+        BRANCH="$arg"
+    else
+        REMAINING+=("$arg")
+    fi
+done
+
+if [ -n "$BRANCH" ] && ! git show-ref --verify --quiet "refs/heads/$BRANCH" \
+                     && ! git show-ref --verify --quiet "refs/remotes/origin/$BRANCH"; then
+    git worktree add -b "$BRANCH" "$WORKTREE_PATH" "${REMAINING[@]}"
+else
+    git worktree add "$WORKTREE_PATH" "$@"
+fi
 
 # Resolve absolute paths
 WORKTREE_ABS=$(realpath "$WORKTREE_PATH")

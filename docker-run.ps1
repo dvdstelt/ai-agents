@@ -1,16 +1,22 @@
 # Central Docker launcher for containerized dev tools.
-# Usage: docker-run.ps1 <prefix> <tool-cmd> [args...]
-#   prefix    Container name prefix (e.g. claude, opencode)
-#   tool-cmd  Command to run inside the container (e.g. claude, opencode)
-#   args      Forwarded to the tool command (e.g. --continue, /bin/bash)
+# Usage: docker-run.ps1 <prefix> <tool-cmd> [-ExtraVolumes <string[]>] [args...]
+#   Prefix        Container name prefix (e.g. claude, opencode)
+#   ToolCmd       Command to run inside the container (e.g. claude, opencode)
+#   ExtraVolumes  Additional volume mount args specific to the tool (optional)
+#   ExtraArgs     Forwarded to the tool command (e.g. --continue, /bin/bash)
 
 param(
     [Parameter(Mandatory)][string]$Prefix,
     [Parameter(Mandatory)][string]$ToolCmd,
+    [string[]]$ExtraVolumes = @(),
     [Parameter(ValueFromRemainingArguments)][string[]]$ExtraArgs
 )
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+
+# Avoid Docker's default detach sequence (Ctrl+P Ctrl+Q) stealing Ctrl+P.
+# This makes Ctrl+P usable inside TUIs (OpenCode/Claude Code) when running via docker run/exec.
+$detachKeys = "ctrl-],ctrl-q"
 
 # Create a container name from the folder name
 $workDir = (Get-Location).Path
@@ -40,10 +46,11 @@ if ($ExtraArgs -contains "--continue") {
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Continuing previous session..."
         docker start $containerName
-        docker exec -it $containerName $ToolCmd --continue
+        docker exec -it --detach-keys $detachKeys $containerName $ToolCmd --continue
     } else {
         Write-Host "No previous session found, starting fresh..."
         docker run -it `
+            --detach-keys $detachKeys `
             --name $containerName `
             @envFlag `
             -e "AGENT_CMD=$ToolCmd" `
@@ -53,6 +60,7 @@ if ($ExtraArgs -contains "--continue") {
             -p "${hostPort}:1337" `
             -v "$env:USERPROFILE\.claude:/root/.claude" `
             -v "$env:USERPROFILE\.config:/root/.config" `
+            @ExtraVolumes `
             -v "${parentDir}:/workspace" `
             -w "/workspace/$folderName" `
             claude-code
@@ -68,7 +76,7 @@ if ($ExtraArgs -contains "/bin/bash") {
         exit
     }
     docker start $containerName
-    docker exec -it $containerName /bin/bash
+    docker exec -it --detach-keys $detachKeys $containerName /bin/bash
     exit
 }
 
@@ -76,6 +84,7 @@ if ($ExtraArgs -contains "/bin/bash") {
 docker rm -f $containerName 2>$null | Out-Null
 
 docker run -it `
+    --detach-keys $detachKeys `
     --name $containerName `
     @envFlag `
     -e "AGENT_CMD=$ToolCmd" `
@@ -85,6 +94,7 @@ docker run -it `
     -p "${hostPort}:1337" `
     -v "$env:USERPROFILE\.claude:/root/.claude" `
     -v "$env:USERPROFILE\.config:/root/.config" `
+    @ExtraVolumes `
     -v "${parentDir}:/workspace" `
     -w "/workspace/$folderName" `
     claude-code @ExtraArgs

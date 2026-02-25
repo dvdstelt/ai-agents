@@ -4,10 +4,17 @@ REM Usage: docker-run.bat <prefix> <tool-cmd> [args...]
 REM   prefix    Container name prefix (e.g. claude, opencode)
 REM   tool-cmd  Command to run inside the container (e.g. claude, opencode)
 REM   args      Forwarded to the tool command (e.g. --continue, /bin/bash)
+REM
+REM Callers may set EXTRA_VOLUMES before calling this script to inject
+REM additional -v mount flags, e.g.:
+REM   set "EXTRA_VOLUMES=-v "%USERPROFILE%\.claude:/root/.claude""
 
 set "PREFIX=%~1"
 set "TOOL_CMD=%~2"
 shift & shift
+
+REM Avoid Docker's default detach sequence (Ctrl+P Ctrl+Q) stealing Ctrl+P.
+set "DETACH_KEYS=ctrl-],ctrl-q"
 
 REM Collect remaining args
 set "EXTRA_ARGS="
@@ -46,19 +53,22 @@ if "%EXTRA_ARGS%"==" --continue" (
     if not errorlevel 1 (
         echo Continuing previous session...
         docker start %CONTAINER_NAME%
-        docker exec -it %CONTAINER_NAME% %TOOL_CMD% --continue
+        docker exec -it --detach-keys="%DETACH_KEYS%" %CONTAINER_NAME% %TOOL_CMD% --continue
     ) else (
         echo No previous session found, starting fresh...
         docker run -it ^
+            --detach-keys="%DETACH_KEYS%" ^
             --name %CONTAINER_NAME% ^
             %ENV_FLAG% ^
             -e AGENT_CMD=%TOOL_CMD% ^
             -e HOST_WORKSPACE=%cd% ^
             -e CONTAINER_WORKDIR=/workspace/%FOLDER_NAME% ^
             -e HOST_PORT=%HOST_PORT% ^
+            -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true ^
             -p %HOST_PORT%:1337 ^
             -v "%USERPROFILE%\.claude:/root/.claude" ^
             -v "%USERPROFILE%\.config:/root/.config" ^
+            %EXTRA_VOLUMES% ^
             -v "%PARENT_DIR%:/workspace" ^
             -w "/workspace/%FOLDER_NAME%" ^
             claude-code
@@ -74,7 +84,7 @@ if "%EXTRA_ARGS%"==" /bin/bash" (
         goto :eof
     )
     docker start %CONTAINER_NAME%
-    docker exec -it %CONTAINER_NAME% /bin/bash
+    docker exec -it --detach-keys="%DETACH_KEYS%" %CONTAINER_NAME% /bin/bash
     goto :eof
 )
 
@@ -82,15 +92,18 @@ REM Remove old container for this folder if it exists
 docker rm -f %CONTAINER_NAME% >nul 2>&1
 
 docker run -it ^
+    --detach-keys="%DETACH_KEYS%" ^
     --name %CONTAINER_NAME% ^
     %ENV_FLAG% ^
     -e AGENT_CMD=%TOOL_CMD% ^
     -e HOST_WORKSPACE=%cd% ^
     -e CONTAINER_WORKDIR=/workspace/%FOLDER_NAME% ^
+    -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true ^
     -e HOST_PORT=%HOST_PORT% ^
     -p %HOST_PORT%:1337 ^
     -v "%USERPROFILE%\.claude:/root/.claude" ^
     -v "%USERPROFILE%\.config:/root/.config" ^
+    %EXTRA_VOLUMES% ^
     -v "%PARENT_DIR%:/workspace" ^
     -w "/workspace/%FOLDER_NAME%" ^
     claude-code%EXTRA_ARGS%

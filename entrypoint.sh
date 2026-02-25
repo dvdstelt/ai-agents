@@ -19,4 +19,4 @@ git config --global gc.auto 0
 # npm is the correct installation method inside a Docker container.
 export DISABLE_INSTALLATION_CHECKS=1
 
-exec claude "$@"
+exec "${AGENT_CMD:-claude}" "$@"

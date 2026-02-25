@@ -67,5 +67,8 @@ RUN sed -i 's/\r$//' /usr/local/bin/git-wtadd /usr/local/bin/portnumber /usr/loc
 # ── Claude Code ──
 RUN npm install -g @anthropic-ai/claude-code
 
+# ── OpenCode ──
+RUN npm install -g opencode-ai
+
 WORKDIR /workspace
 ENTRYPOINT ["entrypoint.sh"]

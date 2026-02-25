@@ -32,10 +32,10 @@ So you can run `cc` and `ccc` from any folder:
 >
 > This doesn't work in PowerShell
 
-Start a temporary container to configure Claude (theme, login, disclaimer):
+Start a temporary container to configure both Claude Code and OpenCode:
 
 ```cmd
-docker run -it --name claude-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "D:\temp\claude:/workspace/temp" -w "/workspace/temp" claude-code
+docker run -it --name claude-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "%USERPROFILE%\.config:/root/.config" -v "D:\temp\claude:/workspace/temp" -w "/workspace/temp" claude-code
 ```
 
 If the container already exists:
@@ -44,7 +44,9 @@ If the container already exists:
 docker start -ai claude-setup
 ```
 
-Inside the container:
+#### Configure Claude Code
+
+The container starts Claude Code by default. Inside the container:
 
 1. Select **Dark mode** (or your preference)
 2. Choose **Claude account with subscription** as login method
@@ -53,14 +55,32 @@ Inside the container:
 5. Accept the disclaimer
 6. Trust the folder
 
-Then exit Claude (`Ctrl+C` or `/exit`) and commit the configured state:
+Then exit Claude (`Ctrl+C` or `/exit`).
+
+#### Configure OpenCode
+
+While still inside the container, start OpenCode:
+
+```bash
+opencode
+```
+
+Inside the OpenCode TUI:
+
+1. Run the `/connect` command
+2. Select your provider (e.g. **Anthropic** to use your Claude subscription)
+3. Follow the prompts to sign in and paste your API key
+
+Then exit OpenCode (`Ctrl+C` or `/exit`).
+
+#### Save the configured state
 
 ```cmd
 docker commit claude-setup claude-code
 docker rm claude-setup
 ```
 
-This bakes your preferences into the image so you won't be asked again.
+This bakes both tools' preferences into the image so you won't be asked again.
 
 ### 4. Environment variables (optional)
 
@@ -80,11 +100,12 @@ Navigate to any project folder, then:
 
 | Command | What it does |
 |---|---|
-| `cc` | Start a new Claude session for the current folder |
-| `ccc` | Continue the previous session for the current folder |
-| `ccd` | Open a bash shell in the running container for the current folder |
+| `cc` | Start a new Claude Code session for the current folder |
+| `ccc` | Continue the previous Claude Code session for the current folder |
+| `ccd` | Open a bash shell in the running Claude Code container |
+| `oc` | Start a new OpenCode session for the current folder |
 
-Both commands are available as `.bat` (CMD) and `.ps1` (PowerShell) scripts.
+All commands are available as `.bat` (CMD) and `.ps1` (PowerShell) scripts.
 
 ### PowerShell execution policy
 
@@ -109,18 +130,7 @@ Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 When you rebuild with `docker build -t claude-code .`, the image is recreated from the Dockerfile. Any state that was baked in via `docker commit` (login, theme, disclaimer) is lost.
 
-To restore it:
-
-```cmd
-docker run -it --name claude-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "D:\temp\claude:/workspace/temp" -w "/workspace/temp" claude-code
-```
-
-Inside the container, go through the prompts again (theme, login, disclaimer), then:
-
-```cmd
-docker commit claude-setup claude-code
-docker rm claude-setup
-```
+To restore it, follow the [First run and configuration](#3-first-run-and-configuration) steps again for both Claude Code and OpenCode, then commit the container.
 
 **Things you do NOT need to redo after a rebuild:**
 - Git identity — set automatically by the entrypoint

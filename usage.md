@@ -35,7 +35,7 @@ So you can run `cc` and `ccc` from any folder:
 Start a temporary container with a bash shell to configure both tools:
 
 ```cmd
-docker run -it --name ai-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "%USERPROFILE%\.config:/root/.config" -v "D:\temp\claude:/workspace/temp" -w "/workspace/temp" claude-code /bin/bash
+docker run -it --name ai-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "%USERPROFILE%\.config:/root/.config" -v "D:\temp\claude:/workspace/temp" -w "/workspace/temp" --entrypoint /bin/bash claude-code
 ```
 
 If the container already exists:

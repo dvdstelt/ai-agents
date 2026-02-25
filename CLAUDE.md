@@ -23,7 +23,7 @@ docker build -t claude-code .
 ### First-time auth setup
 
 ```cmd
-docker run -it --name ai-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "%USERPROFILE%\.config:/root/.config" claude-code /bin/bash
+docker run -it --name ai-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "%USERPROFILE%\.config:/root/.config" --entrypoint /bin/bash claude-code
 ```
 
 Inside the bash shell, run `claude` and `opencode` to configure each tool, then exit.

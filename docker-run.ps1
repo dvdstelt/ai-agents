@@ -1,12 +1,10 @@
 # Central Docker launcher for containerized dev tools.
-# Usage: docker-run.ps1 <prefix> <tool-cmd> [-ExtraVolumes <string[]>] [args...]
-#   Prefix        Container name prefix (e.g. claude, opencode)
+# Usage: docker-run.ps1 <tool-cmd> [-ExtraVolumes <string[]>] [args...]
 #   ToolCmd       Command to run inside the container (e.g. claude, opencode)
 #   ExtraVolumes  Additional volume mount args specific to the tool (optional)
 #   ExtraArgs     Forwarded to the tool command (e.g. --continue, /bin/bash)
 
 param(
-    [Parameter(Mandatory)][string]$Prefix,
     [Parameter(Mandatory)][string]$ToolCmd,
     [string[]]$ExtraVolumes = @(),
     [Parameter(ValueFromRemainingArguments)][string[]]$ExtraArgs
@@ -21,7 +19,7 @@ $detachKeys = "ctrl-],ctrl-q"
 # Create a container name from the folder name
 $workDir = (Get-Location).Path
 $folderName = Split-Path -Leaf $workDir
-$containerName = "$Prefix-$($folderName -replace '@', '-')"
+$containerName = "ai-$($folderName -replace '@', '-')"
 
 # Get the parent directory (mounted as /workspace so worktrees are visible on disk)
 $parentDir = Split-Path -Parent $workDir

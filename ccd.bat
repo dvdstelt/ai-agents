@@ -1,2 +1,2 @@
 @echo off
-call "%~dp0docker-run.bat" claude claude /bin/bash
+call "%~dp0docker-run.bat" claude /bin/bash

@@ -1,7 +1,6 @@
 @echo off
 REM Central Docker launcher for containerized dev tools.
-REM Usage: docker-run.bat <prefix> <tool-cmd> [args...]
-REM   prefix    Container name prefix (e.g. claude, opencode)
+REM Usage: docker-run.bat <tool-cmd> [args...]
 REM   tool-cmd  Command to run inside the container (e.g. claude, opencode)
 REM   args      Forwarded to the tool command (e.g. --continue, /bin/bash)
 REM
@@ -9,9 +8,8 @@ REM Callers may set EXTRA_VOLUMES before calling this script to inject
 REM additional -v mount flags, e.g.:
 REM   set "EXTRA_VOLUMES=-v "%USERPROFILE%\.claude:/root/.claude""
 
-set "PREFIX=%~1"
-set "TOOL_CMD=%~2"
-shift & shift
+set "TOOL_CMD=%~1"
+shift
 
 REM Avoid Docker's default detach sequence (Ctrl+P Ctrl+Q) stealing Ctrl+P.
 set "DETACH_KEYS=ctrl-],ctrl-q"
@@ -27,8 +25,8 @@ goto argloop
 
 REM Create a container name from the folder name (replace @)
 for %%I in ("%cd%") do set "FOLDER_NAME=%%~nxI"
-set "CONTAINER_NAME=%PREFIX%-%FOLDER_NAME%"
-set "CONTAINER_NAME=%CONTAINER_NAME:@=-%"
+set "FOLDER_NAME=%FOLDER_NAME:@=-%"
+set "CONTAINER_NAME=ai-%FOLDER_NAME%"
 
 REM Get the parent directory (mounted as /workspace so worktrees are visible on disk)
 for %%I in ("%cd%\..") do set "PARENT_DIR=%%~fI"

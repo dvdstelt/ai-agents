@@ -1,3 +1,2 @@
 @echo off
-REM Shortcut to continue the previous Claude Code session for this folder.
-call "%~dp0cc.bat" --continue
+call "%~dp0docker-run.bat" claude claude --continue

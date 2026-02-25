@@ -1,2 +1,1 @@
-# Shortcut to continue the previous Claude Code session for this folder.
-& "$PSScriptRoot\cc.ps1" --continue
+& "$PSScriptRoot\docker-run.ps1" claude claude --continue

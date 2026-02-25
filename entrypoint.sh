@@ -15,6 +15,10 @@ fi
 # them. This is safe: the container is ephemeral, gc isn't needed here.
 git config --global gc.auto 0
 
+# Allow OpenCode to capture Ctrl+O (WSL/terminal intercepts it by default as
+# the "discard output" control character; undefining it frees it for OpenCode).
+stty discard undef 2>/dev/null || true
+
 # Suppress the "switched from npm to native installer" warning.
 # npm is the correct installation method inside a Docker container.
 export DISABLE_INSTALLATION_CHECKS=1

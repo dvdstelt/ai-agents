@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git Workflow
+
+Committing directly to `main` is allowed in this repo. This overrides the global rule against committing to protected branches. Worktrees are not required here.
+
 ## What This Project Is
 
 A Docker-based wrapper that runs Claude Code (the CLI) inside a container with a pre-installed development environment. Designed for Windows users who want consistent tooling across projects.
@@ -19,14 +23,14 @@ docker build -t claude-code .
 ### First-time auth setup
 
 ```cmd
-docker run -it --name claude-setup -v "%USERPROFILE%\.claude:/root/.claude" claude-code
+docker run -it --name ai-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "%USERPROFILE%\.config:/root/.config" claude-code /bin/bash
 ```
 
-After authenticating inside the container, commit and clean up:
+Inside the bash shell, run `claude` and `opencode` to configure each tool, then exit.
 
 ```cmd
-docker commit claude-setup claude-code
-docker rm claude-setup
+docker commit ai-setup claude-code
+docker rm ai-setup
 ```
 
 ### Save container state back to image
@@ -42,7 +46,9 @@ For tools you'll always need, add them to the `Dockerfile` and rebuild instead.
 
 ## Architecture
 
-**Launcher scripts** (`cc.bat` / `cc.ps1`) are placed on the Windows `PATH` so they can be called from any project folder. Running `cc` from a folder:
+**`docker-run.bat` / `docker-run.ps1`** contain all shared Docker logic (container naming, volume mounts, port mapping, env file loading). Thin wrapper scripts (`cc`, `oc`, `ccc`, `ccd`, `occ`) are one-liners that call `docker-run` with the right prefix and tool command.
+
+Running `cc` from a folder:
 
 1. Derives a container name from the current folder name (e.g. `claude-my-project`)
 2. Removes any old container with that name
@@ -52,7 +58,7 @@ For tools you'll always need, add them to the `Dockerfile` and rebuild instead.
    - Current working directory → `/workspace` (project files)
 4. Auto-loads `.env` from this repo's root if it exists
 
-**`ccc.bat` / `ccc.ps1`** are thin wrappers that call `cc --continue`, which reattaches to the existing named container instead of replacing it.
+**`ccc` / `occ`** continue the previous session for Claude Code / OpenCode respectively.
 
 **The Docker image** (`Dockerfile`) is based on `node:lts-slim` and includes:
 - Core utilities: bash, curl, wget, git, jq, tree, build-essential

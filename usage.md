@@ -32,21 +32,27 @@ So you can run `cc` and `ccc` from any folder:
 >
 > This doesn't work in PowerShell
 
-Start a temporary container to configure both Claude Code and OpenCode:
+Start a temporary container with a bash shell to configure both tools:
 
 ```cmd
-docker run -it --name claude-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "%USERPROFILE%\.config:/root/.config" -v "D:\temp\claude:/workspace/temp" -w "/workspace/temp" claude-code
+docker run -it --name ai-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "%USERPROFILE%\.config:/root/.config" -v "D:\temp\claude:/workspace/temp" -w "/workspace/temp" claude-code /bin/bash
 ```
 
 If the container already exists:
 
 ```
-docker start -ai claude-setup
+docker start -ai ai-setup
 ```
 
 #### Configure Claude Code
 
-The container starts Claude Code by default. Inside the container:
+From the bash shell, start Claude:
+
+```bash
+claude
+```
+
+Inside Claude:
 
 1. Select **Dark mode** (or your preference)
 2. Choose **Claude account with subscription** as login method
@@ -59,7 +65,7 @@ Then exit Claude (`Ctrl+C` or `/exit`).
 
 #### Configure OpenCode
 
-While still inside the container, start OpenCode:
+Still in the bash shell, start OpenCode:
 
 ```bash
 opencode
@@ -75,9 +81,11 @@ Then exit OpenCode (`Ctrl+C` or `/exit`).
 
 #### Save the configured state
 
+Exit the bash shell (`exit`), then commit the container:
+
 ```cmd
-docker commit claude-setup claude-code
-docker rm claude-setup
+docker commit ai-setup claude-code
+docker rm ai-setup
 ```
 
 This bakes both tools' preferences into the image so you won't be asked again.
@@ -104,6 +112,7 @@ Navigate to any project folder, then:
 | `ccc` | Continue the previous Claude Code session for the current folder |
 | `ccd` | Open a bash shell in the running Claude Code container |
 | `oc` | Start a new OpenCode session for the current folder |
+| `occ` | Continue the previous OpenCode session for the current folder |
 
 All commands are available as `.bat` (CMD) and `.ps1` (PowerShell) scripts.
 

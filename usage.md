@@ -35,8 +35,12 @@ So you can run `cc` and `ccc` from any folder:
 Start a temporary container with a bash shell to configure both tools:
 
 ```cmd
-docker run -it --name ai-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "%USERPROFILE%\.config:/root/.config" -v "D:\temp\claude:/workspace/temp" -w "/workspace/temp" --entrypoint /bin/bash claude-code
+docker run -it --name ai-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "%USERPROFILE%\.config:/root/.config" -v "D:\temp\claude:/workspace/temp" -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true -w "/workspace/temp" --entrypoint /bin/bash claude-code
 ```
+
+> [!TIP]
+>
+> The `-e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true` flag is needed because the OpenCode TUI tries to copy text to the clipboard whenever you select it. In a Windows Terminal to Docker to bash chain, this breaks the terminal and prevents you from pasting the authentication URL or API key. The env var disables that behavior so copy-paste works normally during setup.
 
 If the container already exists:
 
@@ -84,9 +88,13 @@ Then exit OpenCode (`Ctrl+C` or `/exit`).
 Exit the bash shell (`exit`), then commit the container:
 
 ```cmd
-docker commit ai-setup claude-code
+docker commit --change "ENTRYPOINT [\"entrypoint.sh\"]" ai-setup claude-code
 docker rm ai-setup
 ```
+
+> [!IMPORTANT]
+>
+> The `--change "ENTRYPOINT ..."` flag is required because the setup container was started with `--entrypoint /bin/bash`. Without it, `docker commit` bakes `/bin/bash` as the entrypoint into the image, and `cc` would drop you into a bash shell instead of starting Claude.
 
 This bakes both tools' preferences into the image so you won't be asked again.
 
@@ -95,9 +103,9 @@ This bakes both tools' preferences into the image so you won't be asked again.
 If your projects need environment variables (API keys, secrets, etc.), create a `.env` file in the `claude-master` folder:
 
 ```
-BITVAVO_API_KEY=...
-BITVAVO_API_SECRET=...
-GOOGLE_CLIENT_ID=...
+MY_CUSTOM_VALUE=1337
+SQL_CONNECTIONSTRING="server=(local);"
+AZURE_SERVICE_BUS_CONNECTIONSTRING=""
 ```
 
 This file is automatically loaded into every container.
@@ -221,6 +229,12 @@ Access from Windows: http://localhost:34521
 Because each container gets a random port, multiple containers can run simultaneously without port conflicts.
 
 ## Maintenance
+
+### Fix Ctrl+P inside TUIs (Docker detach keys)
+
+Docker reserves `Ctrl+P Ctrl+Q` as the default detach sequence for interactive sessions. This can cause apps inside the container (e.g. OpenCode) to require pressing `Ctrl+P` twice.
+
+This repo sets Docker's detach keys per-run in `docker-run.bat` and `docker-run.ps1` to `ctrl-],ctrl-q`.
 
 ### Add a new tool to the image
 

@@ -84,6 +84,24 @@ Running `cc` (or `oc`) from a folder:
 - `portnumber` - shows the mapped host port for container port 1337
 - `fix-plugin-paths.py` - rewrites Windows plugin paths to Linux paths
 
+## Creating Worktrees
+
+Always use `git-wtadd` (not `git worktree add` directly) to create worktrees. This ensures the `.git` file uses relative paths that work both inside the container and on the Windows host.
+
+**Path convention:** `/workspace/<repo-name>@<branch-name>`, where any `/` in the branch name is replaced with `-` in the path.
+
+```bash
+# From inside the repo you want to branch from:
+# cd /workspace/<repo-name>
+# git-wtadd /workspace/<repo-name>@<branch-with-dashes> <actual-branch-name>
+
+# Example: branch name "feature/my-thing"
+cd /workspace/NServiceBus
+git-wtadd /workspace/NServiceBus@feature-my-thing feature/my-thing
+```
+
+`git-wtadd` automatically creates the branch with `-b` if it does not already exist.
+
 ## Environment Variables
 
 Place a `.env` file in this repo's root. It is automatically passed to every container via `--env-file`. This is the single place to store API keys and secrets needed by all projects.

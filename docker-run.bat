@@ -14,11 +14,21 @@ shift
 REM Avoid Docker's default detach sequence (Ctrl+P Ctrl+Q) stealing Ctrl+P.
 set "DETACH_KEYS=ctrl-],ctrl-q"
 
-REM Collect remaining args
-set "EXTRA_ARGS="
+REM Parse remaining args: detect special flags, translate --risk, collect claude flags
+set "HAS_CONTINUE="
+set "HAS_BASH="
+set "CLAUDE_FLAGS="
 :argloop
 if "%~1"=="" goto argsdone
-set "EXTRA_ARGS=%EXTRA_ARGS% %1"
+if /i "%~1"=="--continue" (
+    set "HAS_CONTINUE=1"
+) else if /i "%~1"=="/bin/bash" (
+    set "HAS_BASH=1"
+) else if /i "%~1"=="--risk" (
+    set "CLAUDE_FLAGS=%CLAUDE_FLAGS% --dangerously-skip-permissions"
+) else (
+    set "CLAUDE_FLAGS=%CLAUDE_FLAGS% %~1"
+)
 shift
 goto argloop
 :argsdone
@@ -46,12 +56,12 @@ echo Container: %CONTAINER_NAME%
 echo.
 
 REM Handle --continue: reattach to existing container, or start fresh if none exists
-if "%EXTRA_ARGS%"==" --continue" (
+if defined HAS_CONTINUE (
     docker container inspect %CONTAINER_NAME% >nul 2>&1
     if not errorlevel 1 (
         echo Continuing previous session...
         docker start %CONTAINER_NAME%
-        docker exec -it --detach-keys="%DETACH_KEYS%" %CONTAINER_NAME% %TOOL_CMD% --continue
+        docker exec -it --detach-keys="%DETACH_KEYS%" %CONTAINER_NAME% %TOOL_CMD% --continue%CLAUDE_FLAGS%
     ) else (
         echo No previous session found, starting fresh...
         docker run -it ^
@@ -69,13 +79,13 @@ if "%EXTRA_ARGS%"==" --continue" (
             %EXTRA_VOLUMES% ^
             -v "%PARENT_DIR%:/workspace" ^
             -w "/workspace/%FOLDER_NAME%" ^
-            claude-code
+            claude-code%CLAUDE_FLAGS%
     )
     goto :eof
 )
 
 REM Handle /bin/bash: only proceed if the container already exists
-if "%EXTRA_ARGS%"==" /bin/bash" (
+if defined HAS_BASH (
     docker container inspect %CONTAINER_NAME% >nul 2>&1
     if errorlevel 1 (
         echo Container %CONTAINER_NAME% does not exist.
@@ -104,4 +114,4 @@ docker run -it ^
     %EXTRA_VOLUMES% ^
     -v "%PARENT_DIR%:/workspace" ^
     -w "/workspace/%FOLDER_NAME%" ^
-    claude-code%EXTRA_ARGS%
+    claude-code%CLAUDE_FLAGS%

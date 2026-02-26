@@ -55,6 +55,7 @@ if ($ExtraArgs -contains "--continue") {
             -e "HOST_WORKSPACE=$workDir" `
             -e "CONTAINER_WORKDIR=/workspace/$folderName" `
             -e "HOST_PORT=$hostPort" `
+            -e "OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true" `
             -p "${hostPort}:1337" `
             -v "$env:USERPROFILE\.claude:/root/.claude" `
             -v "$env:USERPROFILE\.config:/root/.config" `
@@ -89,6 +90,7 @@ docker run -it `
     -e "HOST_WORKSPACE=$workDir" `
     -e "CONTAINER_WORKDIR=/workspace/$folderName" `
     -e "HOST_PORT=$hostPort" `
+    -e "OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true" `
     -p "${hostPort}:1337" `
     -v "$env:USERPROFILE\.claude:/root/.claude" `
     -v "$env:USERPROFILE\.config:/root/.config" `

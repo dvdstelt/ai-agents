@@ -20,15 +20,11 @@ set "HAS_BASH="
 set "CLAUDE_FLAGS="
 :argloop
 if "%~1"=="" goto argsdone
-if /i "%~1"=="--continue" (
-    set "HAS_CONTINUE=1"
-) else if /i "%~1"=="/bin/bash" (
-    set "HAS_BASH=1"
-) else if /i "%~1"=="--risk" (
-    set "CLAUDE_FLAGS=%CLAUDE_FLAGS% --dangerously-skip-permissions"
-) else (
-    set "CLAUDE_FLAGS=%CLAUDE_FLAGS% %~1"
-)
+if /i "%~1"=="--continue" ( set "HAS_CONTINUE=1" & goto arg_next )
+if /i "%~1"=="/bin/bash"  ( set "HAS_BASH=1"     & goto arg_next )
+if /i "%~1"=="--risk"     ( set "CLAUDE_FLAGS=%CLAUDE_FLAGS% --dangerously-skip-permissions" & goto arg_next )
+set "CLAUDE_FLAGS=%CLAUDE_FLAGS% %~1"
+:arg_next
 shift
 goto argloop
 :argsdone

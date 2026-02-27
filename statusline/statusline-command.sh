@@ -25,5 +25,13 @@ fi
 home="$HOME"
 short_cwd=$(printf '%s\n' "$cwd" | sed "s|^$home|~|")
 
-printf '\033[0;36m%s\033[0m  \033[0;33m%s\033[0m  \033[0;32m%s\033[0m' \
-  "$model" "$short_cwd" "$ctx_segment"
+# Get current git branch (empty if not in a repo)
+branch=$(git branch --show-current 2>/dev/null)
+if [ -n "$branch" ]; then
+  branch_segment=" \033[0;35m($branch)\033[0m"
+else
+  branch_segment=""
+fi
+
+printf '\033[0;36m%s\033[0m  \033[0;33m%s\033[0m%b  \033[0;32m%s\033[0m' \
+  "$model" "$short_cwd" "$branch_segment" "$ctx_segment"

@@ -3,8 +3,7 @@
 input=$(cat)
 
 model=$(echo "$input" | jq -r '.model.display_name // "Claude"')
-container_cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
-cwd="$container_cwd"
+cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
 used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 remaining=$(echo "$input" | jq -r '.context_window.remaining_percentage // empty')
 
@@ -26,13 +25,5 @@ fi
 home="$HOME"
 short_cwd=$(printf '%s\n' "$cwd" | sed "s|^$home|~|")
 
-# Get current git branch using the container path explicitly (empty if not in a repo)
-branch=$(git -C "$container_cwd" branch --show-current 2>/dev/null)
-if [ -n "$branch" ]; then
-  branch_segment=" \033[0;35m($branch)\033[0m"
-else
-  branch_segment=""
-fi
-
-printf '\033[0;36m%s\033[0m  \033[0;33m%s\033[0m%b  \033[0;32m%s\033[0m' \
-  "$model" "$short_cwd" "$branch_segment" "$ctx_segment"
+printf '\033[0;36m%s\033[0m  \033[0;33m%s\033[0m  \033[0;32m%s\033[0m' \
+  "$model" "$short_cwd" "$ctx_segment"

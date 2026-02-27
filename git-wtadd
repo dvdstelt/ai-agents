@@ -70,3 +70,18 @@ else
     echo "Worktree created: $WORKTREE_PATH"
     echo "  Warning: HOST_WORKSPACE/CONTAINER_WORKDIR not set, gitdir left as container path"
 fi
+
+# Strip mismatched upstream tracking — a branch created from origin/main inherits
+# "merge = refs/heads/main", which causes git push to silently target main instead
+# of a dedicated feature branch remote. Strip if the upstream branch name differs
+# from the local branch name (e.g. feature/x tracking origin/main).
+CURRENT_BRANCH=$(git -C "$WORKTREE_PATH" branch --show-current)
+UPSTREAM_MERGE=$(git -C "$WORKTREE_PATH" config --get "branch.$CURRENT_BRANCH.merge" 2>/dev/null || true)
+UPSTREAM_BRANCH="${UPSTREAM_MERGE#refs/heads/}"
+
+if [ -n "$UPSTREAM_MERGE" ] && [ "$UPSTREAM_BRANCH" != "$CURRENT_BRANCH" ]; then
+    git -C "$WORKTREE_PATH" branch --unset-upstream
+    echo "  Upstream tracking cleared (was pointing to $UPSTREAM_MERGE — pushes must use an explicit target)."
+fi
+echo ""
+git -C "$WORKTREE_PATH" branch -vv

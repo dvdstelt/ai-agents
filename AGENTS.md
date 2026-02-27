@@ -4,7 +4,9 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Git Workflow
 
-Committing directly to `main` is allowed in this repo. This overrides any global rule against committing to protected branches. Worktrees are not required here.
+Worktrees are not required here.
+
+**Do not commit automatically.** After completing a change, suggest a commit message but do not stage or commit anything. The user commits manually.
 
 ## What This Project Is
 

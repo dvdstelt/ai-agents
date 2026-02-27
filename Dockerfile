@@ -1,5 +1,7 @@
 FROM node:lts-slim
 
+LABEL version="1.0.0"
+
 # ── Core utilities (Claude's toolbox) ──
 RUN apt-get update && apt-get install -y \
     bash \

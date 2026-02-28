@@ -12,6 +12,12 @@ param(
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
+# Translate --risk shorthand to the full Claude flag
+$ExtraArgs = $ExtraArgs | ForEach-Object { if ($_ -eq "--risk") { "--dangerously-skip-permissions" } else { $_ } }
+
+# Flags forwarded to the claude command (everything except docker-level --continue)
+$claudeFlags = @($ExtraArgs | Where-Object { $_ -ne "--continue" })
+
 # Avoid Docker's default detach sequence (Ctrl+P Ctrl+Q) stealing Ctrl+P.
 # This makes Ctrl+P usable inside TUIs (OpenCode/Claude Code) when running via docker run/exec.
 $detachKeys = "ctrl-],ctrl-q"
@@ -44,7 +50,7 @@ if ($ExtraArgs -contains "--continue") {
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Continuing previous session..."
         docker start $containerName
-        docker exec -it --detach-keys $detachKeys $containerName $ToolCmd --continue
+        docker exec -it --detach-keys $detachKeys $containerName $ToolCmd --continue @claudeFlags
     } else {
         Write-Host "No previous session found, starting fresh..."
         docker run -it `
@@ -62,7 +68,7 @@ if ($ExtraArgs -contains "--continue") {
             @ExtraVolumes `
             -v "${parentDir}:/workspace" `
             -w "/workspace/$folderName" `
-            claude-code
+            claude-code @claudeFlags
     }
     exit
 }

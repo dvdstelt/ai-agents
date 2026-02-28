@@ -1,1 +1,1 @@
-& "$PSScriptRoot\docker-run.ps1" claude --continue
+& "$PSScriptRoot\docker-run.ps1" claude --continue @args

@@ -1,0 +1,17 @@
+# Ignore everything by default — this folder is junctioned into the git repo
+# as global-config/. Only explicitly un-ignored files below will be tracked.
+*
+
+# Whitelist: top-level files
+!.gitignore
+!CLAUDE.md
+!settings.json
+!statusline-command.sh
+!statusline-command.js
+
+# Whitelist: commands (un-ignore dir first, then files)
+!commands/
+!commands/*.md
+
+# Whitelist: skills folder (individual skills must be explicitly un-ignored)
+!skills/

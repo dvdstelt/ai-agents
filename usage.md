@@ -17,7 +17,32 @@ or for a full rebuild without cache use:
 docker build --no-cache -t claude-code .
 ```
 
-### 2. Add claude-master to your PATH
+### 2. Link Claude config to the repo (one-time)
+
+The `global-config/` folder in this repo tracks your Claude Code configuration files (`CLAUDE.md`, `settings.json`, commands, etc.) under version control. On Windows, this is done using a directory junction so that `%USERPROFILE%\.claude` and `global-config/` are the same folder — edits in one are immediately reflected in the other.
+
+**On a fresh machine (first time):**
+
+Copy the committed config files into your Claude config folder first:
+
+```cmd
+xcopy /E /I /Y "D:\git\dvdstelt\claude-master\global-config" "%USERPROFILE%\.claude"
+```
+
+Then replace the real `global-config` folder with a junction pointing back to `%USERPROFILE%\.claude`:
+
+```cmd
+rmdir "D:\git\dvdstelt\claude-master\global-config"
+mklink /J "D:\git\dvdstelt\claude-master\global-config" "%USERPROFILE%\.claude"
+```
+
+After this, `global-config/` is a live view of your Claude config. Git tracks only the whitelisted files (defined in `global-config/.gitignore`), so volatile files like `history.jsonl`, `.credentials.json`, and `projects/` are never committed.
+
+> [!NOTE]
+>
+> The junction only works on Windows. Inside the Docker container, Linux cannot follow it — git operations for `global-config/` must be done from a Windows git client (e.g. VS Code, GitKraken, or a Windows terminal).
+
+### 3. Add claude-master to your PATH
 
 So you can run `cc` and `ccc` from any folder:
 

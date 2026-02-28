@@ -4,10 +4,10 @@
 
 ### 1. Build the image
 
-From the `claude-master` folder:
+From the `ai-agents` folder:
 
 ```cmd
-cd D:\git\dvdstelt\claude-master
+cd D:\git\dvdstelt\ai-agents
 docker build -t claude-code .
 ```
 
@@ -26,14 +26,14 @@ The `global-config/` folder in this repo tracks your Claude Code configuration f
 Copy the committed config files into your Claude config folder first:
 
 ```cmd
-xcopy /E /I /Y "D:\git\dvdstelt\claude-master\global-config" "%USERPROFILE%\.claude"
+xcopy /E /I /Y "D:\git\dvdstelt\ai-agents\global-config" "%USERPROFILE%\.claude"
 ```
 
 Then replace the real `global-config` folder with a junction pointing back to `%USERPROFILE%\.claude`:
 
 ```cmd
-rmdir "D:\git\dvdstelt\claude-master\global-config"
-mklink /J "D:\git\dvdstelt\claude-master\global-config" "%USERPROFILE%\.claude"
+rmdir "D:\git\dvdstelt\ai-agents\global-config" /s /q
+mklink /J "D:\git\dvdstelt\ai-agents\global-config" "%USERPROFILE%\.claude"
 ```
 
 After this, `global-config/` is a live view of your Claude config. Git tracks only the whitelisted files (defined in `global-config/.gitignore`), so volatile files like `history.jsonl`, `.credentials.json`, and `projects/` are never committed.
@@ -42,13 +42,13 @@ After this, `global-config/` is a live view of your Claude config. Git tracks on
 >
 > The junction only works on Windows. Inside the Docker container, Linux cannot follow it — git operations for `global-config/` must be done from a Windows git client (e.g. VS Code, GitKraken, or a Windows terminal).
 
-### 3. Add claude-master to your PATH
+### 3. Add ai-agents to your PATH
 
 So you can run `cc` and `ccc` from any folder:
 
 1. Open **Start > Edit environment variables for your account**
 2. Edit the `Path` variable
-3. Add the path to your `claude-master` folder
+3. Add the path to your `ai-agents` folder
 4. Restart your terminal
 
 ### 3. First run and configuration
@@ -125,7 +125,7 @@ This bakes both tools' preferences into the image so you won't be asked again.
 
 ### 4. Environment variables (optional)
 
-If your projects need environment variables (API keys, secrets, etc.), create a `.env` file in the `claude-master` folder:
+If your projects need environment variables (API keys, secrets, etc.), create a `.env` file in the `ai-agents` folder:
 
 ```
 MY_CUSTOM_VALUE=1337
@@ -163,7 +163,7 @@ Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 - **Changes to your files persist.** Anything Claude writes under `/workspace` is written directly to your host disk.
 - **Containers persist for `ccc`.** Each folder gets a named container (e.g. `claude-my-project`). Running `cc` replaces the old container; `ccc` reattaches to it.
 - **Auth and settings persist.** Your `%USERPROFILE%\.claude` and `%USERPROFILE%\.config` folders are mounted into every container.
-- **Environment variables are shared.** The `.env` file in `claude-master` is loaded into every container automatically.
+- **Environment variables are shared.** The `.env` file in `ai-agents` is loaded into every container automatically.
 - **Multiple projects at once.** You can run multiple containers simultaneously, each mounted to a different folder. They are fully isolated from each other.
 - **Git identity is set automatically.** The entrypoint configures `user.name` and `user.email` on every container start, so you never need to set it manually.
 - **Plugin paths are fixed automatically.** Plugins installed on Windows store Windows paths. The entrypoint rewrites these to Linux paths on container start.

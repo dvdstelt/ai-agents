@@ -51,7 +51,7 @@ So you can run `cc` and `ccc` from any folder:
 3. Add the path to your `ai-agents` folder
 4. Restart your terminal
 
-### 3. First run and configuration
+### 4. First run and configuration
 
 > [!NOTE]
 >
@@ -123,7 +123,25 @@ docker rm ai-setup
 
 This bakes both tools' preferences into the image so you won't be asked again.
 
-### 4. Environment variables (optional)
+### 5. Windows notifications (optional)
+
+Get a toast notification whenever Claude finishes a response, showing the project folder and branch (e.g. `ai-agents:main`).
+
+**Prerequisites:** install the [BurntToast](https://github.com/Windos/BurntToast) PowerShell module:
+
+```powershell
+Install-Module BurntToast -Scope CurrentUser
+```
+
+**Setup:** run once from an elevated PowerShell window:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "$env:USERPROFILE\.claude\claude-notify-install.ps1"
+```
+
+This registers a logon task that runs the notification listener silently in the background. See `%USERPROFILE%\.claude\claude-notify-usage.md` for troubleshooting and management commands.
+
+### 6. Environment variables (optional)
 
 If your projects need environment variables (API keys, secrets, etc.), create a `.env` file in the `ai-agents` folder:
 

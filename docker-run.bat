@@ -70,6 +70,7 @@ if defined HAS_CONTINUE (
             -e HOST_PORT=%HOST_PORT% ^
             -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true ^
             -e IS_SANDBOX=1 ^
+            -e COLORTERM=truecolor ^
             -p %HOST_PORT%:1337 ^
             -v "%USERPROFILE%\.claude:/root/.claude" ^
             -v "%USERPROFILE%\.config:/root/.config" ^
@@ -106,6 +107,7 @@ docker run -it ^
     -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true ^
     -e IS_SANDBOX=1 ^
     -e HOST_PORT=%HOST_PORT% ^
+    -e COLORTERM=truecolor ^
     -p %HOST_PORT%:1337 ^
     -v "%USERPROFILE%\.claude:/root/.claude" ^
     -v "%USERPROFILE%\.config:/root/.config" ^

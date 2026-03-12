@@ -64,9 +64,9 @@ if defined HAS_CONTINUE (
             --detach-keys="%DETACH_KEYS%" ^
             --name %CONTAINER_NAME% ^
             %ENV_FLAG% ^
-            -e AGENT_CMD=%TOOL_CMD% ^
-            -e HOST_WORKSPACE=%cd% ^
-            -e CONTAINER_WORKDIR=/workspace/%FOLDER_NAME% ^
+            -e "AGENT_CMD=%TOOL_CMD%" ^
+            -e "HOST_WORKSPACE=%cd%" ^
+            -e "CONTAINER_WORKDIR=/workspace/%FOLDER_NAME%" ^
             -e HOST_PORT=%HOST_PORT% ^
             -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true ^
             -e IS_SANDBOX=1 ^
@@ -101,9 +101,9 @@ docker run -it ^
     --detach-keys="%DETACH_KEYS%" ^
     --name %CONTAINER_NAME% ^
     %ENV_FLAG% ^
-    -e AGENT_CMD=%TOOL_CMD% ^
-    -e HOST_WORKSPACE=%cd% ^
-    -e CONTAINER_WORKDIR=/workspace/%FOLDER_NAME% ^
+    -e "AGENT_CMD=%TOOL_CMD%" ^
+    -e "HOST_WORKSPACE=%cd%" ^
+    -e "CONTAINER_WORKDIR=/workspace/%FOLDER_NAME%" ^
     -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true ^
     -e IS_SANDBOX=1 ^
     -e HOST_PORT=%HOST_PORT% ^

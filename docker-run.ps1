@@ -63,9 +63,12 @@ if ($ExtraArgs -contains "--continue") {
             -e "CONTAINER_WORKDIR=/workspace/$folderName" `
             -e "HOST_PORT=$hostPort" `
             -e "OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true" `
+            -e "IS_SANDBOX=1" `
+            -e "COLORTERM=truecolor" `
             -p "${hostPort}:1337" `
             -v "$env:USERPROFILE\.claude:/root/.claude" `
             -v "$env:USERPROFILE\.config:/root/.config" `
+            -v "$env:USERPROFILE\.ssh:/root/.ssh" `
             @ExtraVolumes `
             -v "${parentDir}:/workspace" `
             -w "/workspace/$folderName" `
@@ -98,9 +101,12 @@ docker run -it `
     -e "CONTAINER_WORKDIR=/workspace/$folderName" `
     -e "HOST_PORT=$hostPort" `
     -e "OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true" `
+    -e "IS_SANDBOX=1" `
+    -e "COLORTERM=truecolor" `
     -p "${hostPort}:1337" `
     -v "$env:USERPROFILE\.claude:/root/.claude" `
     -v "$env:USERPROFILE\.config:/root/.config" `
+    -v "$env:USERPROFILE\.ssh:/root/.ssh" `
     @ExtraVolumes `
     -v "${parentDir}:/workspace" `
     -w "/workspace/$folderName" `

@@ -4,8 +4,9 @@
 #   ExtraVolumes  Additional volume mount args specific to the tool (optional)
 #   ExtraArgs     Forwarded to the tool command (e.g. --continue, /bin/bash)
 
+[CmdletBinding()]
 param(
-    [Parameter(Mandatory)][string]$ToolCmd,
+    [Parameter(Mandatory, Position=0)][string]$ToolCmd,
     [string[]]$ExtraVolumes = @(),
     [Parameter(ValueFromRemainingArguments)][string[]]$ExtraArgs
 )
@@ -103,4 +104,4 @@ docker run -it `
     @ExtraVolumes `
     -v "${parentDir}:/workspace" `
     -w "/workspace/$folderName" `
-    claude-code @ExtraArgs
+    claude-code @claudeFlags

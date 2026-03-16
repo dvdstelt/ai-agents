@@ -74,6 +74,7 @@ if defined HAS_CONTINUE (
             -p %HOST_PORT%:1337 ^
             -v "%USERPROFILE%\.claude:/root/.claude" ^
             -v "%USERPROFILE%\.config:/root/.config" ^
+            -v "%USERPROFILE%\.ssh:/root/.ssh" ^
             %EXTRA_VOLUMES% ^
             -v "%PARENT_DIR%:/workspace" ^
             -w "/workspace/%FOLDER_NAME%" ^
@@ -111,6 +112,7 @@ docker run -it ^
     -p %HOST_PORT%:1337 ^
     -v "%USERPROFILE%\.claude:/root/.claude" ^
     -v "%USERPROFILE%\.config:/root/.config" ^
+    -v "%USERPROFILE%\.ssh:/root/.ssh" ^
     %EXTRA_VOLUMES% ^
     -v "%PARENT_DIR%:/workspace" ^
     -w "/workspace/%FOLDER_NAME%" ^

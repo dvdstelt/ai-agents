@@ -41,6 +41,9 @@ if (Test-Path "$scriptDir\.env") {
     Write-Host "Loading .env file from $scriptDir"
 }
 
+# Set the terminal title so multiple windows are easy to tell apart
+$Host.UI.RawUI.WindowTitle = "$ToolCmd - $folderName"
+
 Write-Host "Mounting: $parentDir (project: $folderName)"
 Write-Host "Container: $containerName"
 Write-Host ""
@@ -65,6 +68,7 @@ if ($ExtraArgs -contains "--continue") {
             -e "OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true" `
             -e "IS_SANDBOX=1" `
             -e "COLORTERM=truecolor" `
+            -e "CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1" `
             -p "${hostPort}:1337" `
             -v "$env:USERPROFILE\.claude:/root/.claude" `
             -v "$env:USERPROFILE\.config:/root/.config" `
@@ -103,6 +107,7 @@ docker run -it `
     -e "OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true" `
     -e "IS_SANDBOX=1" `
     -e "COLORTERM=truecolor" `
+    -e "CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1" `
     -p "${hostPort}:1337" `
     -v "$env:USERPROFILE\.claude:/root/.claude" `
     -v "$env:USERPROFILE\.config:/root/.config" `

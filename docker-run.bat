@@ -47,6 +47,9 @@ if exist "%~dp0.env" (
     echo Loading .env file from %~dp0
 )
 
+REM Set the terminal title so multiple windows are easy to tell apart
+title %TOOL_CMD% - %FOLDER_NAME%
+
 echo Mounting: %PARENT_DIR% (project: %FOLDER_NAME%)
 echo Container: %CONTAINER_NAME%
 echo.
@@ -71,6 +74,7 @@ if defined HAS_CONTINUE (
             -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true ^
             -e IS_SANDBOX=1 ^
             -e COLORTERM=truecolor ^
+            -e CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 ^
             -p %HOST_PORT%:1337 ^
             -v "%USERPROFILE%\.claude:/root/.claude" ^
             -v "%USERPROFILE%\.config:/root/.config" ^
@@ -109,6 +113,7 @@ docker run -it ^
     -e IS_SANDBOX=1 ^
     -e HOST_PORT=%HOST_PORT% ^
     -e COLORTERM=truecolor ^
+    -e CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 ^
     -p %HOST_PORT%:1337 ^
     -v "%USERPROFILE%\.claude:/root/.claude" ^
     -v "%USERPROFILE%\.config:/root/.config" ^

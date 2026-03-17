@@ -89,6 +89,7 @@ if defined HAS_CONTINUE (
 
 REM Handle /bin/bash: only proceed if the container already exists
 if defined HAS_BASH (
+    title bash - %FOLDER_NAME%
     docker container inspect %CONTAINER_NAME% >nul 2>&1
     if errorlevel 1 (
         echo Container %CONTAINER_NAME% does not exist.

@@ -83,6 +83,7 @@ if ($ExtraArgs -contains "--continue") {
 
 # Handle /bin/bash: only proceed if the container already exists
 if ($ExtraArgs -contains "/bin/bash") {
+    $Host.UI.RawUI.WindowTitle = "bash - $folderName"
     docker container inspect $containerName 2>$null | Out-Null
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Container $containerName does not exist."

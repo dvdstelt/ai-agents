@@ -6,16 +6,10 @@ Run [Claude Code](https://claude.ai/code) and [OpenCode](https://opencode.ai) in
 
 AI coding agents work best with a consistent, pre-configured environment: the right language runtimes, tools, and git identity already in place. This repo provides a Docker image and a set of thin launcher scripts so you can start an agent session in any project folder with a single command, without installing anything into your Windows environment.
 
-## Quick Start
+## Documentation
 
-See **[usage.md](usage.md)** for full setup and usage instructions, including:
-
-- Building the Docker image
-- First-time authentication for Claude Code and OpenCode
-- The `cc`, `ccc`, `oc`, `occ`, and `ccd` commands
-- Worktree support
-- Port mapping for dev servers
-- Maintenance (rebuilding, committing changes back to the image)
+- **[image-setup.md](image-setup.md)** - Building, configuring, and rebuilding the Docker image
+- **[usage.md](usage.md)** - Commands, host setup, worktrees, and port mapping
 
 ## Blog Series
 

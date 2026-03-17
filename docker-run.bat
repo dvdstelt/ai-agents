@@ -60,7 +60,7 @@ if defined HAS_CONTINUE (
     if not errorlevel 1 (
         echo Continuing previous session...
         docker start %CONTAINER_NAME%
-        docker exec -it --detach-keys="%DETACH_KEYS%" %CONTAINER_NAME% %TOOL_CMD% --continue%CLAUDE_FLAGS%
+        docker exec -it --detach-keys="%DETACH_KEYS%" -e CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 %CONTAINER_NAME% %TOOL_CMD% --continue%CLAUDE_FLAGS%
     ) else (
         echo No previous session found, starting fresh...
         docker run -it ^

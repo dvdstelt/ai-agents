@@ -54,7 +54,7 @@ if ($ExtraArgs -contains "--continue") {
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Continuing previous session..."
         docker start $containerName
-        docker exec -it --detach-keys $detachKeys $containerName $ToolCmd --continue @claudeFlags
+        docker exec -it --detach-keys $detachKeys -e "CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1" $containerName $ToolCmd --continue @claudeFlags
     } else {
         Write-Host "No previous session found, starting fresh..."
         docker run -it `

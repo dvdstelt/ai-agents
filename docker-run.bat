@@ -47,6 +47,9 @@ if exist "%~dp0.env" (
     echo Loading .env file from %~dp0
 )
 
+REM Set the terminal title so multiple windows are easy to tell apart
+title %TOOL_CMD% - %FOLDER_NAME%
+
 echo Mounting: %PARENT_DIR% (project: %FOLDER_NAME%)
 echo Container: %CONTAINER_NAME%
 echo.
@@ -57,23 +60,25 @@ if defined HAS_CONTINUE (
     if not errorlevel 1 (
         echo Continuing previous session...
         docker start %CONTAINER_NAME%
-        docker exec -it --detach-keys="%DETACH_KEYS%" %CONTAINER_NAME% %TOOL_CMD% --continue%CLAUDE_FLAGS%
+        docker exec -it --detach-keys="%DETACH_KEYS%" -e CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 %CONTAINER_NAME% %TOOL_CMD% --continue%CLAUDE_FLAGS%
     ) else (
         echo No previous session found, starting fresh...
         docker run -it ^
             --detach-keys="%DETACH_KEYS%" ^
             --name %CONTAINER_NAME% ^
             %ENV_FLAG% ^
-            -e AGENT_CMD=%TOOL_CMD% ^
-            -e HOST_WORKSPACE=%cd% ^
-            -e CONTAINER_WORKDIR=/workspace/%FOLDER_NAME% ^
+            -e "AGENT_CMD=%TOOL_CMD%" ^
+            -e "HOST_WORKSPACE=%cd%" ^
+            -e "CONTAINER_WORKDIR=/workspace/%FOLDER_NAME%" ^
             -e HOST_PORT=%HOST_PORT% ^
             -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true ^
             -e IS_SANDBOX=1 ^
             -e COLORTERM=truecolor ^
+            -e CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 ^
             -p %HOST_PORT%:1337 ^
             -v "%USERPROFILE%\.claude:/root/.claude" ^
             -v "%USERPROFILE%\.config:/root/.config" ^
+            -v "%USERPROFILE%\.ssh:/root/.ssh" ^
             %EXTRA_VOLUMES% ^
             -v "%PARENT_DIR%:/workspace" ^
             -w "/workspace/%FOLDER_NAME%" ^
@@ -84,6 +89,7 @@ if defined HAS_CONTINUE (
 
 REM Handle /bin/bash: only proceed if the container already exists
 if defined HAS_BASH (
+    title bash - %FOLDER_NAME%
     docker container inspect %CONTAINER_NAME% >nul 2>&1
     if errorlevel 1 (
         echo Container %CONTAINER_NAME% does not exist.
@@ -101,16 +107,18 @@ docker run -it ^
     --detach-keys="%DETACH_KEYS%" ^
     --name %CONTAINER_NAME% ^
     %ENV_FLAG% ^
-    -e AGENT_CMD=%TOOL_CMD% ^
-    -e HOST_WORKSPACE=%cd% ^
-    -e CONTAINER_WORKDIR=/workspace/%FOLDER_NAME% ^
+    -e "AGENT_CMD=%TOOL_CMD%" ^
+    -e "HOST_WORKSPACE=%cd%" ^
+    -e "CONTAINER_WORKDIR=/workspace/%FOLDER_NAME%" ^
     -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true ^
     -e IS_SANDBOX=1 ^
     -e HOST_PORT=%HOST_PORT% ^
     -e COLORTERM=truecolor ^
+    -e CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 ^
     -p %HOST_PORT%:1337 ^
     -v "%USERPROFILE%\.claude:/root/.claude" ^
     -v "%USERPROFILE%\.config:/root/.config" ^
+    -v "%USERPROFILE%\.ssh:/root/.ssh" ^
     %EXTRA_VOLUMES% ^
     -v "%PARENT_DIR%:/workspace" ^
     -w "/workspace/%FOLDER_NAME%" ^

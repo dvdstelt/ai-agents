@@ -11,15 +11,9 @@ cd D:\git\dvdstelt\ai-agents
 docker build -t claude-code .
 ```
 
-or for a full rebuild without cache use:
-
-```
-docker build --no-cache -t claude-code .
-```
-
 ### 2. Link Claude config to the repo (one-time)
 
-The `global-config/` folder in this repo tracks your Claude Code configuration files (`CLAUDE.md`, `settings.json`, commands, etc.) under version control. On Windows, this is done using a directory junction so that `%USERPROFILE%\.claude` and `global-config/` are the same folder — edits in one are immediately reflected in the other.
+The `global-config/` folder in this repo tracks your Claude Code configuration files (`CLAUDE.md`, `settings.json`, commands, etc.) under version control. On Windows, this is done using a directory junction so that `%USERPROFILE%\.claude` and `global-config/` are the same folder; edits in one are immediately reflected in the other.
 
 **On a fresh machine (first time):**
 
@@ -40,7 +34,7 @@ After this, `global-config/` is a live view of your Claude config. Git tracks on
 
 > [!NOTE]
 >
-> The junction only works on Windows. Inside the Docker container, Linux cannot follow it — git operations for `global-config/` must be done from a Windows git client (e.g. VS Code, GitKraken, or a Windows terminal).
+> The junction only works on Windows. Inside the Docker container, Linux cannot follow it; git operations for `global-config/` must be done from a Windows git client (e.g. VS Code, GitKraken, or a Windows terminal).
 
 ### 3. Add ai-agents to your PATH
 
@@ -175,28 +169,77 @@ If PowerShell blocks `.ps1` scripts, run this once:
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-## How it works
+## How It Works
 
 - **Parent directory is mounted.** Running `cc` from `D:\git\dvdstelt\my-project` mounts `D:\git\dvdstelt` as `/workspace` inside the container. Claude starts in `/workspace/my-project`. This means sibling folders (including worktrees) are also visible.
 - **Changes to your files persist.** Anything Claude writes under `/workspace` is written directly to your host disk.
 - **Containers persist for `ccc`.** Each folder gets a named container (e.g. `claude-my-project`). Running `cc` replaces the old container; `ccc` reattaches to it.
 - **Auth and settings persist.** Your `%USERPROFILE%\.claude` and `%USERPROFILE%\.config` folders are mounted into every container.
+- **SSH keys are available.** Your `%USERPROFILE%\.ssh` folder is mounted, so Git over SSH and remote access work inside the container.
 - **Environment variables are shared.** The `.env` file in `ai-agents` is loaded into every container automatically.
 - **Multiple projects at once.** You can run multiple containers simultaneously, each mounted to a different folder. They are fully isolated from each other.
 - **Git identity is set automatically.** The entrypoint configures `user.name` and `user.email` on every container start, so you never need to set it manually.
 - **Plugin paths are fixed automatically.** Plugins installed on Windows store Windows paths. The entrypoint rewrites these to Linux paths on container start.
 
-## After Rebuilding the Image
+## Managing the Image
 
-When you rebuild with `docker build -t claude-code .`, the image is recreated from the Dockerfile. Any state that was baked in via `docker commit` (login, theme, disclaimer) is lost.
+There are two ways to update what's in the image: **rebuilding** from the Dockerfile, or **committing** changes from a running container. Use whichever fits the situation.
 
-To restore it, follow the [First run and configuration](#3-first-run-and-configuration) steps again for both Claude Code and OpenCode, then commit the container.
+### Rebuilding the image
+
+Rebuild when the Dockerfile itself changes (new base image, new system packages, updated tool versions). This creates a clean image from scratch.
+
+```cmd
+cd D:\git\dvdstelt\ai-agents
+docker build -t claude-code .
+```
+
+For a full rebuild without cache:
+
+```cmd
+docker build --no-cache -t claude-code .
+```
+
+After rebuilding, any state that was previously baked in via `docker commit` (login prompts, theme preferences, disclaimer acceptance) is lost. To restore it, follow the [First run and configuration](#4-first-run-and-configuration) steps again, then [save the configured state](#save-the-configured-state).
 
 **Things you do NOT need to redo after a rebuild:**
-- Git identity — set automatically by the entrypoint
-- Plugin path fixes — handled automatically by the entrypoint
-- Environment variables — loaded from `.env` at runtime
-- Auth credentials — stored in `%USERPROFILE%\.claude` on your host
+- Git identity, set automatically by the entrypoint
+- Plugin path fixes, handled automatically by the entrypoint
+- Environment variables, loaded from `.env` at runtime
+- Auth credentials, stored in `%USERPROFILE%\.claude` on your host
+
+### Adding a new tool to the image
+
+If the tool is something you'll always need, add it to the Dockerfile so the image is reproducible from scratch:
+
+1. Edit the `Dockerfile` to add the tool (e.g. add `golang` to an `apt-get install` line)
+2. Rebuild: `docker build -t claude-code .`
+3. Follow the [rebuild steps above](#rebuilding-the-image) to reconfigure
+
+### Saving ad-hoc changes with docker commit
+
+Anything installed or configured inside a container is lost when the container is removed, unless you commit it back to the image. Use this for quick, one-off changes that don't belong in the Dockerfile.
+
+```cmd
+REM 1. Start a named container (without --rm so it sticks around)
+docker run -it --name my-temp-container claude-code
+
+REM 2. Do whatever you need inside (install tools, change config, etc.)
+REM    Then exit the container.
+
+REM 3. Save the container's state back into the image
+docker commit my-temp-container claude-code
+
+REM 4. Clean up the temporary container
+docker rm my-temp-container
+```
+
+After committing, every new container started from `claude-code` will have those changes.
+
+**Examples:**
+- Claude installed a tool (e.g. Ruby gem, pip package) you want to keep
+- You changed a system config inside the container
+- You want to update Claude Code itself (`npm update -g @anthropic-ai/claude-code` inside the container, then commit)
 
 ## Worktrees
 
@@ -271,53 +314,10 @@ Access from Windows: http://localhost:34521
 
 Because each container gets a random port, multiple containers can run simultaneously without port conflicts.
 
-## Maintenance
+## Troubleshooting
 
-### Fix Ctrl+P inside TUIs (Docker detach keys)
+### Ctrl+P doesn't work inside the container
 
 Docker reserves `Ctrl+P Ctrl+Q` as the default detach sequence for interactive sessions. This can cause apps inside the container (e.g. OpenCode) to require pressing `Ctrl+P` twice.
 
-This repo sets Docker's detach keys per-run in `docker-run.bat` and `docker-run.ps1` to `ctrl-],ctrl-q`.
-
-### Add a new tool to the image
-
-1. Edit the `Dockerfile` to add the tool (e.g. add `golang` to an `apt-get install` line)
-2. Rebuild: `docker build -t claude-code .`
-3. Follow the [After Rebuilding the Image](#after-rebuilding-the-image) steps
-
-### Save changes to the image (docker commit)
-
-Anything installed or configured inside a container is lost when the container is removed — unless you commit it back to the image. This is how we baked in the Claude settings during initial setup, and you can use the same pattern anytime.
-
-The general workflow:
-
-```cmd
-REM 1. Start a named container (without --rm so it sticks around)
-docker run -it --name my-temp-container claude-code
-
-REM 2. Do whatever you need inside (install tools, change config, etc.)
-REM    Then exit the container.
-
-REM 3. Save the container's state back into the image
-docker commit my-temp-container claude-code
-
-REM 4. Clean up the temporary container
-docker rm my-temp-container
-```
-
-After committing, every new container started from `claude-code` will have those changes.
-
-**Examples of when to use this:**
-- Claude installed a tool (e.g. Ruby gem, pip package) you want to keep
-- You changed a system config inside the container
-- You want to update Claude Code itself (`npm update -g @anthropic-ai/claude-code` inside the container, then commit)
-
-**When NOT to use this** — if the tool is something you'll always need, add it to the `Dockerfile` instead and rebuild. That way the image is reproducible from scratch.
-
-### Git SSH keys
-
-If you need Git over SSH inside the container, add this volume mount to the `docker run` commands in `cc.bat`/`cc.ps1`:
-
-```
--v "%USERPROFILE%\.ssh:/root/.ssh:ro"
-```
+This repo sets Docker's detach keys per-run in `docker-run.bat` and `docker-run.ps1` to `ctrl-],ctrl-q`, so this should not normally be an issue. If you're seeing the problem, make sure you're using the launcher scripts (`cc`, `oc`, etc.) rather than running `docker run` directly.

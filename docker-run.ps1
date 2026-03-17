@@ -4,8 +4,9 @@
 #   ExtraVolumes  Additional volume mount args specific to the tool (optional)
 #   ExtraArgs     Forwarded to the tool command (e.g. --continue, /bin/bash)
 
+[CmdletBinding()]
 param(
-    [Parameter(Mandatory)][string]$ToolCmd,
+    [Parameter(Mandatory, Position=0)][string]$ToolCmd,
     [string[]]$ExtraVolumes = @(),
     [Parameter(ValueFromRemainingArguments)][string[]]$ExtraArgs
 )
@@ -40,6 +41,9 @@ if (Test-Path "$scriptDir\.env") {
     Write-Host "Loading .env file from $scriptDir"
 }
 
+# Set the terminal title so multiple windows are easy to tell apart
+$Host.UI.RawUI.WindowTitle = "$ToolCmd - $folderName"
+
 Write-Host "Mounting: $parentDir (project: $folderName)"
 Write-Host "Container: $containerName"
 Write-Host ""
@@ -50,7 +54,7 @@ if ($ExtraArgs -contains "--continue") {
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Continuing previous session..."
         docker start $containerName
-        docker exec -it --detach-keys $detachKeys $containerName $ToolCmd --continue @claudeFlags
+        docker exec -it --detach-keys $detachKeys -e "CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1" $containerName $ToolCmd --continue @claudeFlags
     } else {
         Write-Host "No previous session found, starting fresh..."
         docker run -it `
@@ -62,9 +66,13 @@ if ($ExtraArgs -contains "--continue") {
             -e "CONTAINER_WORKDIR=/workspace/$folderName" `
             -e "HOST_PORT=$hostPort" `
             -e "OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true" `
+            -e "IS_SANDBOX=1" `
+            -e "COLORTERM=truecolor" `
+            -e "CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1" `
             -p "${hostPort}:1337" `
             -v "$env:USERPROFILE\.claude:/root/.claude" `
             -v "$env:USERPROFILE\.config:/root/.config" `
+            -v "$env:USERPROFILE\.ssh:/root/.ssh" `
             @ExtraVolumes `
             -v "${parentDir}:/workspace" `
             -w "/workspace/$folderName" `
@@ -75,6 +83,7 @@ if ($ExtraArgs -contains "--continue") {
 
 # Handle /bin/bash: only proceed if the container already exists
 if ($ExtraArgs -contains "/bin/bash") {
+    $Host.UI.RawUI.WindowTitle = "bash - $folderName"
     docker container inspect $containerName 2>$null | Out-Null
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Container $containerName does not exist."
@@ -97,10 +106,14 @@ docker run -it `
     -e "CONTAINER_WORKDIR=/workspace/$folderName" `
     -e "HOST_PORT=$hostPort" `
     -e "OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true" `
+    -e "IS_SANDBOX=1" `
+    -e "COLORTERM=truecolor" `
+    -e "CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1" `
     -p "${hostPort}:1337" `
     -v "$env:USERPROFILE\.claude:/root/.claude" `
     -v "$env:USERPROFILE\.config:/root/.config" `
+    -v "$env:USERPROFILE\.ssh:/root/.ssh" `
     @ExtraVolumes `
     -v "${parentDir}:/workspace" `
     -w "/workspace/$folderName" `
-    claude-code @ExtraArgs
+    claude-code @claudeFlags

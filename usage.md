@@ -104,6 +104,9 @@ Each container maps a random host port to container port **1337**. To access a d
    # npm/vite/astro
    npm run dev -- --host --port 1337
 
+   # static files
+   npx serve . -l 1337
+
    # .NET
    dotnet run --urls http://0.0.0.0:1337
    ```

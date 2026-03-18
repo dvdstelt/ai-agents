@@ -96,10 +96,24 @@ Merge from the **main checkout**, not from the worktree.
 
 ## Port mapping
 
-Each container maps a random host port to container port **1337**. Bind your server to port 1337 inside the container, then run `portnumber` to find the host port:
+Each container maps a random host port to container port **1337**. To access a dev server from Windows:
 
-```bash
-$ portnumber
-Container port 1337 is mapped to host port 34521
-Access from Windows: http://localhost:34521
-```
+1. Start your server on port 1337, bound to all interfaces (`--host` or `0.0.0.0`):
+
+   ```bash
+   # npm/vite/astro
+   npm run dev -- --host --port 1337
+
+   # .NET
+   dotnet run --urls http://0.0.0.0:1337
+   ```
+
+2. Run `portnumber` inside the container to find the host port:
+
+   ```bash
+   $ portnumber
+   Container port 1337 is mapped to host port 34521
+   Access from Windows: http://localhost:34521
+   ```
+
+The `--host` flag is required because dev servers default to `localhost` only, which is not reachable from outside the container. Multiple containers can run simultaneously since each gets a random port.

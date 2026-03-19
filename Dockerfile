@@ -66,6 +66,9 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN sed -i 's/\r$//' /usr/local/bin/git-wtadd /usr/local/bin/portnumber /usr/local/bin/fix-plugin-paths.py /usr/local/bin/entrypoint.sh \
     && chmod +x /usr/local/bin/git-wtadd /usr/local/bin/portnumber /usr/local/bin/entrypoint.sh
 
+# ── RTK (token-optimized CLI proxy) ──
+RUN curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+
 # ── Claude Code ──
 RUN npm install -g @anthropic-ai/claude-code
 

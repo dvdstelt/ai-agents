@@ -42,6 +42,7 @@ Running `cc` (or `oc`) from a folder:
 - .NET SDK (LTS, telemetry disabled) with dotnet-outdated-tool
 - Ruby + Bundler
 - Node-based static site generators: Astro, Hugo Extended, Eleventy
+- RTK (token-optimized CLI proxy)
 - Claude Code CLI (`@anthropic-ai/claude-code`)
 - OpenCode (`opencode-ai`)
 

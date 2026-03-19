@@ -42,7 +42,15 @@ claude
 
 Exit with `Ctrl+C` or `/exit`.
 
-**3. Configure OpenCode** (optional):
+**3. Activate RTK:**
+
+```bash
+rtk init --global
+```
+
+This writes hook configuration to `~/.claude/`, which is mounted from your host. You only need to run this once; it survives image rebuilds.
+
+**4. Configure OpenCode** (optional):
 
 ```bash
 opencode
@@ -51,7 +59,7 @@ opencode
 1. Run `/connect`, select your provider, sign in
 2. Exit with `Ctrl+C` or `/exit`
 
-**4. Save and clean up:**
+**5. Save and clean up:**
 
 Exit the bash shell (`exit`), then:
 
@@ -71,6 +79,7 @@ Done. Every new container will now start without login prompts.
 You do NOT need to reconfigure these after rebuilding:
 
 - **Auth credentials** stored in `%USERPROFILE%\.claude` on your host (mounted at runtime)
+- **RTK hooks** written to `%USERPROFILE%\.claude` by `rtk init --global`
 - **Git identity** set automatically by the entrypoint
 - **Plugin paths** rewritten from Windows to Linux by the entrypoint
 - **Environment variables** loaded from `.env` at runtime

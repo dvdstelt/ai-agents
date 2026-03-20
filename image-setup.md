@@ -27,9 +27,10 @@ docker run -it --name ai-setup -v "%USERPROFILE%\.claude:/root/.claude" -v "%USE
 
 If the container already exists from a previous attempt: `docker start -ai ai-setup`
 
-**2. Configure Claude Code:**
+**2. Restore Claude config and start Claude Code:**
 
 ```bash
+cp "$(ls -t /root/.claude/backups/.claude.json.backup.* | head -1)" /root/.claude.json 2>/dev/null
 claude
 ```
 

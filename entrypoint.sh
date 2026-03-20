@@ -1,6 +1,15 @@
 #!/bin/bash
 # Container entrypoint: fix cross-platform paths, configure git, then launch Claude.
 
+# Restore .claude.json from backup if missing (the file lives at /root/.claude.json
+# but only /root/.claude/ is volume-mounted, so it's lost on new containers)
+if [ ! -f /root/.claude.json ] && [ -d /root/.claude/backups ]; then
+    latest=$(ls -t /root/.claude/backups/.claude.json.backup.* 2>/dev/null | head -1)
+    if [ -n "$latest" ]; then
+        cp "$latest" /root/.claude.json
+    fi
+fi
+
 # Fix Windows plugin paths for Linux
 python3 /usr/local/bin/fix-plugin-paths.py 2>/dev/null
 

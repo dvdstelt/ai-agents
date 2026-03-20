@@ -56,7 +56,8 @@ RUN apt-get update && apt-get install -y \
 RUN npm install -g \
     astro \
     hugo-extended \
-    @11ty/eleventy
+    @11ty/eleventy \
+    serve
 
 # ── Helper scripts ──
 COPY git-wtadd /usr/local/bin/git-wtadd

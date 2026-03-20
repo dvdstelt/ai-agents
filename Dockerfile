@@ -68,7 +68,7 @@ RUN sed -i 's/\r$//' /usr/local/bin/git-wtadd /usr/local/bin/portnumber /usr/loc
     && chmod +x /usr/local/bin/git-wtadd /usr/local/bin/portnumber /usr/local/bin/entrypoint.sh
 
 # ── RTK (token-optimized CLI proxy) ──
-RUN RTK_INSTALL_DIR=/usr/local/bin curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | sh
+RUN curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | RTK_INSTALL_DIR=/usr/local/bin sh
 
 # ── Claude Code ──
 RUN npm install -g @anthropic-ai/claude-code

@@ -72,10 +72,10 @@ if [ -n "$HAS_CONTINUE" ]; then
             -e "COLORTERM=truecolor" \
             -e "CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1" \
             -p "${HOST_PORT}:1337" \
-            -v "$HOME/.claude:/root/.claude:Z" \
-            -v "$HOME/.config/rtk:/root/.config/rtk:Z" \
-            -v "$HOME/.config/opencode:/root/.config/opencode:Z" \
-            -v "$HOME/.ssh:/root/.ssh:Z" \
+            -v "$HOME/.claude:/root/.claude:z" \
+            -v "$HOME/.config/rtk:/root/.config/rtk:z" \
+            -v "$HOME/.config/opencode:/root/.config/opencode:z" \
+            -v "$HOME/.ssh:/root/.ssh:z" \
             -v "$PARENT_DIR:/workspace:z" \
             -w "/workspace/$FOLDER_NAME" \
             claude-code "${CLAUDE_FLAGS[@]}"
@@ -108,10 +108,10 @@ $DOCKER run -it \
     -e "COLORTERM=truecolor" \
     -e "CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1" \
     -p "${HOST_PORT}:1337" \
-    -v "$HOME/.claude:/root/.claude:Z" \
-    -v "$HOME/.config/rtk:/root/.config/rtk:Z" \
-    -v "$HOME/.config/opencode:/root/.config/opencode:Z" \
-    -v "$HOME/.ssh:/root/.ssh:Z" \
+    -v "$HOME/.claude:/root/.claude:z" \
+    -v "$HOME/.config/rtk:/root/.config/rtk:z" \
+    -v "$HOME/.config/opencode:/root/.config/opencode:z" \
+    -v "$HOME/.ssh:/root/.ssh:z" \
     -v "$PARENT_DIR:/workspace:z" \
     -w "/workspace/$FOLDER_NAME" \
     claude-code "${CLAUDE_FLAGS[@]}"

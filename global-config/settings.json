@@ -17,7 +17,6 @@
       "Bash(git push *)"
     ]
   },
-  "model": "sonnet",
   "statusLine": {
     "type": "command",
     "command": "sh /root/.claude/statusline-command.sh"
@@ -25,8 +24,9 @@
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": true,
-    "code-review@claude-plugins-official": false
+    "code-review@claude-plugins-official": false,
+    "playwright@claude-plugins-official": true
   },
-  "effortLevel": "medium",
+  "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true
 }

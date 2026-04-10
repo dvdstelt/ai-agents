@@ -8,7 +8,8 @@ AI coding agents work best with a consistent, pre-configured environment: the ri
 
 ## Documentation
 
-- **[image-setup.md](image-setup.md)** - Building, configuring, and rebuilding the Docker image
+- **[image-setup-windows.md](image-setup-windows.md)** - Building and configuring the image (Windows / Docker)
+- **[image-setup-linux.md](image-setup-linux.md)** - Building and configuring the image (Linux / Podman)
 - **[usage.md](usage.md)** - Commands, host setup, worktrees, and port mapping
 
 ## Blog Series

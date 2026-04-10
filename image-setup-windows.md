@@ -60,6 +60,10 @@ opencode
 1. Run `/connect`, select your provider, sign in
 2. Exit with `Ctrl+C` or `/exit`
 
+> [!NOTE]
+>
+> Using a Claude Code subscription as a provider is against Anthropic's ToS. For OpenAI (ChatGPT), select the **headless** login option, not the browser-based one — browser auth doesn't work inside a container.
+
 **5. Save and clean up:**
 
 Exit the bash shell (`exit`), then:

@@ -1,12 +1,16 @@
 #!/bin/bash
 # Container entrypoint: fix cross-platform paths, configure git, then launch Claude.
 
-# Restore .claude.json from backup if missing (the file lives at /root/.claude.json
-# but only /root/.claude/ is volume-mounted, so it's lost on new containers)
-if [ ! -f /root/.claude.json ] && [ -d /root/.claude/backups ]; then
+# Symlink .claude.json into the mounted volume so auth and settings persist
+# across containers. Claude Code writes to /root/.claude.json but only
+# /root/.claude/ is volume-mounted, so we keep the real file inside the mount.
+if [ -f /root/.claude/claude.json ]; then
+    ln -sf /root/.claude/claude.json /root/.claude.json
+elif [ -d /root/.claude/backups ]; then
     latest=$(ls -t /root/.claude/backups/.claude.json.backup.* 2>/dev/null | head -1)
     if [ -n "$latest" ]; then
-        cp "$latest" /root/.claude.json
+        cp "$latest" /root/.claude/claude.json
+        ln -sf /root/.claude/claude.json /root/.claude.json
     fi
 fi
 

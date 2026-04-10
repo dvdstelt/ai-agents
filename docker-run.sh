@@ -76,7 +76,7 @@ if [ -n "$HAS_CONTINUE" ]; then
             -v "$HOME/.config/rtk:/root/.config/rtk:Z" \
             -v "$HOME/.config/opencode:/root/.config/opencode:Z" \
             -v "$HOME/.ssh:/root/.ssh:Z" \
-            -v "$PARENT_DIR:/workspace:Z" \
+            -v "$PARENT_DIR:/workspace:z" \
             -w "/workspace/$FOLDER_NAME" \
             claude-code "${CLAUDE_FLAGS[@]}"
     fi
@@ -112,6 +112,6 @@ $DOCKER run -it \
     -v "$HOME/.config/rtk:/root/.config/rtk:Z" \
     -v "$HOME/.config/opencode:/root/.config/opencode:Z" \
     -v "$HOME/.ssh:/root/.ssh:Z" \
-    -v "$PARENT_DIR:/workspace:Z" \
+    -v "$PARENT_DIR:/workspace:z" \
     -w "/workspace/$FOLDER_NAME" \
     claude-code "${CLAUDE_FLAGS[@]}"

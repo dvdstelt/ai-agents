@@ -21,7 +21,7 @@ All commands are available as `.bat` (CMD) and `.ps1` (PowerShell) scripts. Pass
 - **Containers are reusable.** `cc` replaces the old container; `ccc` reattaches to it.
 - **Auth, settings, and SSH keys persist.** `%USERPROFILE%\.claude`, `.config`, and `.ssh` are mounted into every container.
 - **Environment variables** from `.env` in the `ai-agents` folder are loaded automatically.
-- **Multiple projects at once.** Each folder gets its own isolated container.
+- **Multiple projects at once.** Each folder gets its own isolated container. On Podman/SELinux, the workspace mount uses `:z` (shared label) so sibling containers under the same parent directory can co-exist.
 - **Git identity and plugin paths** are configured automatically by the entrypoint.
 
 ## Host setup (one-time, new machine)

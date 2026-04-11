@@ -1,37 +1,28 @@
-#!/bin/sh
-# Claude Code status line script
+#!/bin/bash
 input=$(cat)
 
-model=$(echo "$input" | jq -r '.model.display_name // .model.id // .model // "Claude"')
-cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
-used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
+MODEL=$(echo "$input" | jq -r '.model.display_name')
+DIR=$(echo "$input" | jq -r '.workspace.current_dir')
+COST=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
+PCT=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | cut -d. -f1)
+DURATION_MS=$(echo "$input" | jq -r '.cost.total_duration_ms // 0')
 
-# Build context usage segment
-if [ -n "$used" ]; then
-  ctx_segment="ctx: $(printf '%.0f' "$used")%"
-else
-  ctx_segment="no messages yet"
-fi
+CYAN='\033[36m'; GREEN='\033[32m'; YELLOW='\033[33m'; RED='\033[31m'; RESET='\033[0m'
 
-# Save original cwd for git branch detection (before any path replacement)
-original_cwd="$cwd"
+# Pick bar color based on context usage
+if [ "$PCT" -ge 90 ]; then BAR_COLOR="$RED"
+elif [ "$PCT" -ge 70 ]; then BAR_COLOR="$YELLOW"
+else BAR_COLOR="$GREEN"; fi
 
-# Detect git branch from the original container path
-git_branch=$(git -C "$original_cwd" --no-optional-locks symbolic-ref --short HEAD 2>/dev/null)
+FILLED=$((PCT / 10)); EMPTY=$((10 - FILLED))
+printf -v FILL "%${FILLED}s"; printf -v PAD "%${EMPTY}s"
+BAR="${FILL// /█}${PAD// /░}"
 
-# Replace container workdir with HOST_WORKSPACE if set, then shorten home to ~
-if [ -n "$HOST_WORKSPACE" ]; then
-  escaped_host_workspace=$(printf '%s' "$HOST_WORKSPACE" | sed 's/\\/\\\\/g')
-  container_workdir="${CONTAINER_WORKDIR:-/workspace}"
-  cwd=$(printf '%s\n' "$cwd" | sed "s|^$container_workdir|$escaped_host_workspace|")
-fi
-home="$HOME"
-short_cwd=$(printf '%s\n' "$cwd" | sed "s|^$home|~|")
+MINS=$((DURATION_MS / 60000)); SECS=$(((DURATION_MS % 60000) / 1000))
 
-# Append branch name to path if one was found
-if [ -n "$git_branch" ]; then
-  short_cwd="$short_cwd:$git_branch"
-fi
+BRANCH=""
+git rev-parse --git-dir > /dev/null 2>&1 && BRANCH=" | 🌿 $(git branch --show-current 2>/dev/null)"
 
-printf '\033[0;36m%s\033[0m  \033[0;33m%s\033[0m  \033[0;32m%s\033[0m' \
-  "$model" "$short_cwd" "$ctx_segment"
+echo -e "${CYAN}[$MODEL]${RESET} 📁 ${DIR##*/}$BRANCH"
+COST_FMT=$(printf '$%.2f' "$COST")
+echo -e "${BAR_COLOR}${BAR}${RESET} ${PCT}% | ${YELLOW}${COST_FMT}${RESET} | ⏱️ ${MINS}m ${SECS}s"

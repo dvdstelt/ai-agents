@@ -11,6 +11,29 @@ podman build -t claude-code .
 
 For a full rebuild without cache: `podman build --no-cache -t claude-code .`
 
+## Host `~/.claude` symlink
+
+On the host, `~/.claude` is a symlink into this repo:
+
+```bash
+~/.claude -> /path/to/ai-agents/global-config
+```
+
+This keeps Claude Code's global config (`settings.json`, `CLAUDE.md`, `statusline-command.sh`, `commands/*.md`) under version control. Changes made through Claude Code on the host, such as installing a plugin, land directly in the repo working tree.
+
+A fresh clone needs this symlink set up once:
+
+```bash
+cd /path/to/ai-agents
+
+# If ~/.claude already exists as a real directory, back it up first
+[ -e "$HOME/.claude" ] && [ ! -L "$HOME/.claude" ] && mv "$HOME/.claude" "$HOME/.claude.backup"
+
+ln -s "$(pwd)/global-config" "$HOME/.claude"
+```
+
+Podman follows the symlink transparently when bind-mounting `~/.claude`, so the setup commands below work unchanged. A whitelist `.gitignore` inside `global-config/` keeps plugins, caches, backups, and credentials out of git.
+
 ## Configuring the image (first time or after rebuild)
 
 After building (or rebuilding) the image, Claude Code's one-time prompts (theme, login, disclaimer) need to be baked in. This only takes a minute.
@@ -19,7 +42,7 @@ After building (or rebuilding) the image, Claude Code's one-time prompts (theme,
 
 ```bash
 mkdir -p /tmp/claude-setup "$HOME/.config/rtk" "$HOME/.config/opencode"
-podman run -it --name ai-setup -v "$HOME/.claude:/root/.claude:Z" -v "$HOME/.config/rtk:/root/.config/rtk:Z" -v "$HOME/.config/opencode:/root/.config/opencode:Z" -v "/tmp/claude-setup:/workspace/temp:Z" -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true -w "/workspace/temp" --entrypoint /bin/bash claude-code
+podman run -it --name ai-setup -v "$HOME/.claude:/root/.claude:z" -v "$HOME/.config/rtk:/root/.config/rtk:z" -v "$HOME/.config/opencode:/root/.config/opencode:z" -v "/tmp/claude-setup:/workspace/temp:z" -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true -w "/workspace/temp" --entrypoint /bin/bash claude-code
 ```
 
 If the container doesn't attach after `podman run`, or already exists from a previous attempt: `podman start -ai ai-setup`

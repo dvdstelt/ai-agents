@@ -1,4 +1,4 @@
-FROM node:lts-slim
+FROM ubuntu:24.04
 
 LABEL version="1.0.0"
 
@@ -26,10 +26,21 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# ── Just (task runner, not in Debian repos) ──
+RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+# ── Python (scripting, automation, quick tools) ──
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+# [OPT] ── Just (task runner, not in Debian repos) ──
 RUN curl -fsSL https://just.systems/install.sh | bash -s -- --to /usr/local/bin
 
-# ── GitHub CLI ──
+# [OPT] ── GitHub CLI ──
 RUN mkdir -p -m 755 /etc/apt/keyrings \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
        | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
@@ -39,48 +50,33 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
     && apt-get update && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
 
-# ── Python (scripting, automation, quick tools) ──
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
-    && rm -rf /var/lib/apt/lists/*
-
-# ── .NET SDK ──
+# [OPT] ── .NET SDK ──
 RUN curl -fsSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel LTS --install-dir /usr/share/dotnet \
     && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
 ENV DOTNET_ROOT=/usr/share/dotnet
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 ENV PATH="$PATH:/root/.dotnet/tools"
 
-# ── .NET global tools ──
+# [OPT] ── .NET global tools ──
 RUN dotnet tool install -g dotnet-outdated-tool
 
-# ── Ruby + Jekyll ──
+# [OPT] ── Ruby + Jekyll ──
 RUN apt-get update && apt-get install -y \
     ruby-full \
     ruby-bundler \
     && rm -rf /var/lib/apt/lists/*
 
-# ── Java 21 ──
-RUN apt-get update && apt-get install -y extrepo && rm -rf /var/lib/apt/lists/*
-RUN extrepo enable zulu-openjdk
-RUN apt-get update && apt-get install -y zulu21-jdk && rm -rf /var/lib/apt/lists/*
-
-# ── Static site generators (Node-based) ──
+# [OPT] ── Static site generators (Node-based) ──
 RUN npm install -g \
     astro \
     hugo-extended \
     @11ty/eleventy \
     serve
 
-# ── Helper scripts ──
-COPY git-wtadd /usr/local/bin/git-wtadd
-COPY portnumber /usr/local/bin/portnumber
-COPY fix-plugin-paths.py /usr/local/bin/fix-plugin-paths.py
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN sed -i 's/\r$//' /usr/local/bin/git-wtadd /usr/local/bin/portnumber /usr/local/bin/fix-plugin-paths.py /usr/local/bin/entrypoint.sh \
-    && chmod +x /usr/local/bin/git-wtadd /usr/local/bin/portnumber /usr/local/bin/entrypoint.sh
+# [OPT] ── Java 21 ──
+RUN apt-get update && apt-get install -y extrepo && rm -rf /var/lib/apt/lists/*
+RUN extrepo enable zulu-openjdk
+RUN apt-get update && apt-get install -y zulu21-jdk && rm -rf /var/lib/apt/lists/*
 
 # ── RTK (token-optimized CLI proxy) ──
 RUN curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | RTK_INSTALL_DIR=/usr/local/bin sh
@@ -90,6 +86,14 @@ RUN npm install -g @anthropic-ai/claude-code
 
 # ── OpenCode ──
 RUN npm install -g opencode-ai
+
+# ── Helper scripts ──
+COPY git-wtadd /usr/local/bin/git-wtadd
+COPY portnumber /usr/local/bin/portnumber
+COPY fix-plugin-paths.py /usr/local/bin/fix-plugin-paths.py
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/git-wtadd /usr/local/bin/portnumber /usr/local/bin/fix-plugin-paths.py /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/git-wtadd /usr/local/bin/portnumber /usr/local/bin/entrypoint.sh
 
 WORKDIR /workspace
 ENTRYPOINT ["entrypoint.sh"]

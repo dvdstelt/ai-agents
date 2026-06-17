@@ -19,8 +19,8 @@ python3 /usr/local/bin/fix-plugin-paths.py 2>/dev/null
 
 # Set git identity if not already configured
 if ! git config --global user.name &>/dev/null; then
-    git config --global user.email "dvdstelt@gmail.com"
-    git config --global user.name "Dennis van der Stelt"
+  echo "Error: Global git user.name is not set." >&2
+  exit 1
 fi
 
 # Disable automatic git gc inside the container. Worktree gitdir files contain

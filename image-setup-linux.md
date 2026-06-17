@@ -4,16 +4,21 @@ How to build, configure, and rebuild the `claude-code` container image.
 
 ## Building the image
 
+- Git clone the repo to a directory of your choosing
+- Go into the newly created directory, e.g. `cd ai_agents`
+- Comment any section marked with "[OPT]" that you don't want / need
+- Build the Docker image:
 ```bash
-cd ~/src/dvdstelt/ai-agents
 podman build -t claude-code .
 ```
 
 For a full rebuild without cache: `podman build --no-cache -t claude-code .`
 
-## Host `~/.claude` symlink
+## If you want to use the Claude config defined here
 
-On the host, `~/.claude` is a symlink into this repo:
+*Skip this section if you want to keep using your previous Claude config.*
+
+On the host, symlink `~/.claude` into this repo:
 
 ```bash
 ~/.claude -> /path/to/ai-agents/global-config
@@ -27,7 +32,7 @@ A fresh clone needs this symlink set up once:
 cd /path/to/ai-agents
 
 # If ~/.claude already exists as a real directory, back it up first
-[ -e "$HOME/.claude" ] && [ ! -L "$HOME/.claude" ] && mv "$HOME/.claude" "$HOME/.claude.backup"
+[ -e "$HOME/.claude" ] && [ ! -L "$HOME/.claude" ] && cp -r "$HOME/.claude" "$HOME/.claude.backup"
 
 ln -s "$(pwd)/global-config" "$HOME/.claude"
 ```
@@ -36,13 +41,22 @@ Podman follows the symlink transparently when bind-mounting `~/.claude`, so the 
 
 ## Configuring the image (first time or after rebuild)
 
+*Skip this section if you don't want to use RTK.*
+
 After building (or rebuilding) the image, Claude Code's one-time prompts (theme, login, disclaimer) need to be baked in. This only takes a minute.
 
 **1. Start a setup container:**
 
 ```bash
 mkdir -p /tmp/claude-setup "$HOME/.config/rtk" "$HOME/.config/opencode"
-podman run -it --name ai-setup -v "$HOME/.claude:/root/.claude:z" -v "$HOME/.config/rtk:/root/.config/rtk:z" -v "$HOME/.config/opencode:/root/.config/opencode:z" -v "/tmp/claude-setup:/workspace/temp:z" -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true -w "/workspace/temp" --entrypoint /bin/bash claude-code
+podman run -it --name ai-setup \
+  -v "$HOME/.claude:/root/.claude:z" \
+  -v "$HOME/.config/rtk:/root/.config/rtk:z" \
+  -v "$HOME/.config/opencode:/root/.config/opencode:z" \
+  -v "/tmp/claude-setup:/workspace/temp:z" \
+  -e OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true \
+  -w "/workspace/temp" \
+  --entrypoint /bin/bash claude-code
 ```
 
 If the container doesn't attach after `podman run`, or already exists from a previous attempt: `podman start -ai ai-setup`
@@ -110,7 +124,6 @@ You do NOT need to reconfigure these after rebuilding:
 
 - **Auth credentials** stored in `~/.claude` on your host (mounted at runtime)
 - **RTK hooks** written to `~/.claude` by `rtk init --global`
-- **Git identity** set automatically by the entrypoint
 - **Environment variables** loaded from `.env` at runtime
 
 ## Adding a tool to the image
@@ -124,4 +137,21 @@ podman run -it --name my-temp claude-code
 # install whatever you need, then exit
 podman commit my-temp claude-code
 podman rm my-temp
+```
+
+## How to use it
+
+Add the ai-agents to your PATH:
+```bash
+export PATH="/path/to/ai-agents/:$PATH"
+```
+
+Set AI_AGENTS_MOUNT_SSH to false on your shell's config if you *don't* want Claude to use your SSH keys:
+```bash
+export AI_AGENTS_MOUNT_SSH="false
+```
+
+Then:
+```bash
+c
 ```

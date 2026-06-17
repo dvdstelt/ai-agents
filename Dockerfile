@@ -62,6 +62,11 @@ RUN apt-get update && apt-get install -y \
     ruby-bundler \
     && rm -rf /var/lib/apt/lists/*
 
+# ── Java 21 ──
+RUN apt-get update && apt-get install -y extrepo && rm -rf /var/lib/apt/lists/*
+RUN extrepo enable zulu-openjdk
+RUN apt-get update && apt-get install -y zulu21-jdk && rm -rf /var/lib/apt/lists/*
+
 # ── Static site generators (Node-based) ──
 RUN npm install -g \
     astro \

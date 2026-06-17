@@ -18,15 +18,17 @@ fi
 python3 /usr/local/bin/fix-plugin-paths.py 2>/dev/null
 
 # Set git identity if not already configured
-if ! git config --global user.name &>/dev/null; then
-  echo "Error: Global git user.name is not set." >&2
+if ! git config user.name &>/dev/null; then
+  echo "Error: git user.name is not set." >&2
   exit 1
 fi
 
-# Disable automatic git gc inside the container. Worktree gitdir files contain
-# Windows host paths which don't resolve on Linux — gc would incorrectly prune
-# them. This is safe: the container is ephemeral, gc isn't needed here.
-git config --global gc.auto 0
+if [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "cygwin"* || "$OSTYPE" == "win32"* ]] || uname -r | grep -qi "microsoft"; then
+  # Disable automatic git gc inside the container. Worktree gitdir files contain
+  # Windows host paths which don't resolve on Linux — gc would incorrectly prune
+  # them. This is safe: the container is ephemeral, gc isn't needed here.
+  git config --global gc.auto 0
+fi;
 
 # Allow OpenCode to capture Ctrl+O (WSL/terminal intercepts it by default as
 # the "discard output" control character; undefining it frees it for OpenCode).

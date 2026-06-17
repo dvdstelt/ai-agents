@@ -39,6 +39,14 @@ PARENT_DIR="$(dirname "$WORK_DIR")"
 # Pick a random host port (20000-52767) for container port 1337
 HOST_PORT=$(( RANDOM % 10000 + 20000 ))
 
+OPTIONAL_SSH_VOL=()
+
+# Check if the .ssh directory exists on the host
+if [ "${AI_AGENTS_MOUNT_SSH:-true}" = "true" ]; then
+  # If it exists, add the -v flag and the mount path to the array
+  OPTIONAL_SSH_VOL=("-v" "$HOME/.ssh:/root/.ssh:z")
+fi
+
 # Check for .env file in ai-agents folder
 ENV_FLAG=()
 if [ -f "$SCRIPT_DIR/.env" ]; then
@@ -75,7 +83,7 @@ if [ -n "$HAS_CONTINUE" ]; then
             -v "$HOME/.claude:/root/.claude:z" \
             -v "$HOME/.config/rtk:/root/.config/rtk:z" \
             -v "$HOME/.config/opencode:/root/.config/opencode:z" \
-            -v "$HOME/.ssh:/root/.ssh:z" \
+            "${OPTIONAL_SSH_VOL[@]}" \
             -v "$PARENT_DIR:/workspace:z" \
             -w "/workspace/$FOLDER_NAME" \
             claude-code "${CLAUDE_FLAGS[@]}"
@@ -111,7 +119,7 @@ $DOCKER run -it \
     -v "$HOME/.claude:/root/.claude:z" \
     -v "$HOME/.config/rtk:/root/.config/rtk:z" \
     -v "$HOME/.config/opencode:/root/.config/opencode:z" \
-    -v "$HOME/.ssh:/root/.ssh:z" \
+    "${OPTIONAL_SSH_VOL[@]}" \
     -v "$PARENT_DIR:/workspace:z" \
     -w "/workspace/$FOLDER_NAME" \
     claude-code "${CLAUDE_FLAGS[@]}"

@@ -57,6 +57,17 @@ fi
 # Ensure mount targets exist
 mkdir -p "$HOME/.config/rtk" "$HOME/.config/opencode" "$HOME/.ssh"
 
+if [ "${AI_AGENTS_MOUNT_JAVA_CACHE:-true}" = "true" ]; then
+  mkdir -p "$HOME/.m2";
+  mkdir -p "$HOME/.gradle" && touch "$HOME/.gradle/gradle.properties";
+
+  # If it exists, add the -v flag and the mount path to the array
+  OPTIONAL_JAVA_CACHE_VOL=(
+    "-v" "$HOME/.m2/:/root/.m2:z"
+    "-v" "$HOME/.gradle/gradle.properties:/root/.gradle/gradle.properties:z"
+  )
+fi
+
 echo "Mounting: $PARENT_DIR (project: $FOLDER_NAME)"
 echo "Container: $CONTAINER_NAME"
 echo ""
@@ -84,6 +95,7 @@ if [ -n "$HAS_CONTINUE" ]; then
             -v "$HOME/.config/rtk:/root/.config/rtk:z" \
             -v "$HOME/.config/opencode:/root/.config/opencode:z" \
             "${OPTIONAL_SSH_VOL[@]}" \
+            "${OPTIONAL_JAVA_CACHE_VOL[@]}" \
             -v "$PARENT_DIR:/workspace:z" \
             -w "/workspace/$FOLDER_NAME" \
             claude-code "${CLAUDE_FLAGS[@]}"
@@ -120,6 +132,7 @@ $DOCKER run -it \
     -v "$HOME/.config/rtk:/root/.config/rtk:z" \
     -v "$HOME/.config/opencode:/root/.config/opencode:z" \
     "${OPTIONAL_SSH_VOL[@]}" \
+    "${OPTIONAL_JAVA_CACHE_VOL[@]}" \
     -v "$PARENT_DIR:/workspace:z" \
     -w "/workspace/$FOLDER_NAME" \
     claude-code "${CLAUDE_FLAGS[@]}"

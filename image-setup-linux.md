@@ -146,12 +146,16 @@ Add the ai-agents to your PATH:
 export PATH="/path/to/ai-agents/:$PATH"
 ```
 
-Set AI_AGENTS_MOUNT_SSH to false on your shell's config if you *don't* want Claude to use your SSH keys:
+Add the env vars velow to your shell config file:
 ```bash
-export AI_AGENTS_MOUNT_SSH="false
+# Set to false if you *don't* want Claude to use your SSH keys:
+export AI_AGENTS_MOUNT_SSH="false"
+
+# Set to true if you want to run maven/gradle inside the container:
+export AI_AGENTS_MOUNT_JAVA_CACHE="true"
 ```
 
-Then:
+Then, run it :-)
 ```bash
 c
 ```

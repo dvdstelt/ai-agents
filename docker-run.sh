@@ -42,7 +42,7 @@ HOST_PORT=$(( RANDOM % 10000 + 20000 ))
 OPTIONAL_SSH_VOL=()
 
 # Check if the .ssh directory exists on the host
-if [ "${AI_AGENTS_MOUNT_SSH:-true}" = "true" ]; then
+if [ "${AI_AGENTS_MOUNT_SSH:-false}" = "true" ]; then
   # If it exists, add the -v flag and the mount path to the array
   OPTIONAL_SSH_VOL=("-v" "$HOME/.ssh:/root/.ssh:z")
 fi
@@ -57,7 +57,9 @@ fi
 # Ensure mount targets exist
 mkdir -p "$HOME/.config/rtk" "$HOME/.config/opencode" "$HOME/.ssh"
 
-if [ "${AI_AGENTS_MOUNT_JAVA_CACHE:-true}" = "true" ]; then
+###
+OPTIONAL_JAVA_CACHE_VOL=();
+if [ "${AI_AGENTS_MOUNT_JAVA_CACHE:-false}" = "true" ]; then
   mkdir -p "$HOME/.m2";
   mkdir -p "$HOME/.gradle" && touch "$HOME/.gradle/gradle.properties";
 
@@ -68,6 +70,21 @@ if [ "${AI_AGENTS_MOUNT_JAVA_CACHE:-true}" = "true" ]; then
   )
 fi
 
+###
+OPTIONAL_CUSTOM_CLAUDE_CFG_DIR=()
+
+# Check if the variable is set and not empty
+if [ -n "${AI_AGENTS_CUSTOM_CLAUDE_CONFIG_DIR:-}" ]; then
+  OPTIONAL_CUSTOM_CLAUDE_CFG_DIR=(
+    "-v" "${AI_AGENTS_CUSTOM_CLAUDE_CONFIG_DIR}:/root:z"
+  )
+else
+  OPTIONAL_CUSTOM_CLAUDE_CFG_DIR=(
+    "-v" "${HOME}/.claude:/root/.claude:z"
+  )
+fi
+
+###
 echo "Mounting: $PARENT_DIR (project: $FOLDER_NAME)"
 echo "Container: $CONTAINER_NAME"
 echo ""
@@ -80,27 +97,7 @@ if [ -n "$HAS_CONTINUE" ]; then
         $DOCKER exec -it --detach-keys="$DETACH_KEYS" -e CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 "$CONTAINER_NAME" "$TOOL_CMD" --continue "${CLAUDE_FLAGS[@]}"
     else
         echo "No previous session found, starting fresh..."
-        $DOCKER run -it \
-            --detach-keys="$DETACH_KEYS" \
-            --name "$CONTAINER_NAME" \
-            "${ENV_FLAG[@]}" \
-            -e "AGENT_CMD=$TOOL_CMD" \
-            -e "HOST_PORT=$HOST_PORT" \
-            -e "OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT=true" \
-            -e "IS_SANDBOX=1" \
-            -e "COLORTERM=truecolor" \
-            -e "CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1" \
-            -p "${HOST_PORT}:1337" \
-            -v "$HOME/.claude:/root/.claude:z" \
-            -v "$HOME/.config/rtk:/root/.config/rtk:z" \
-            -v "$HOME/.config/opencode:/root/.config/opencode:z" \
-            "${OPTIONAL_SSH_VOL[@]}" \
-            "${OPTIONAL_JAVA_CACHE_VOL[@]}" \
-            -v "$PARENT_DIR:/workspace:z" \
-            -w "/workspace/$FOLDER_NAME" \
-            claude-code "${CLAUDE_FLAGS[@]}"
     fi
-    exit
 fi
 
 # Handle /bin/bash: only proceed if the container already exists
@@ -127,8 +124,8 @@ $DOCKER run -it \
     -e "IS_SANDBOX=1" \
     -e "COLORTERM=truecolor" \
     -e "CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1" \
+    "${OPTIONAL_CUSTOM_CLAUDE_CFG_DIR[@]}" \
     -p "${HOST_PORT}:1337" \
-    -v "$HOME/.claude:/root/.claude:z" \
     -v "$HOME/.config/rtk:/root/.config/rtk:z" \
     -v "$HOME/.config/opencode:/root/.config/opencode:z" \
     "${OPTIONAL_SSH_VOL[@]}" \

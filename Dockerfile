@@ -74,9 +74,14 @@ RUN npm install -g \
     serve
 
 # [OPT] ── Java 21 ──
-RUN apt-get update && apt-get install -y extrepo && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y extrepo
 RUN extrepo enable zulu-openjdk
 RUN apt-get update && apt-get install -y zulu21-jdk && rm -rf /var/lib/apt/lists/*
+
+# [OPT] ── Java 25 ──
+RUN apt-get update && apt-get install -y extrepo
+RUN extrepo enable zulu-openjdk
+RUN apt-get update && apt-get install -y zulu25-jdk && rm -rf /var/lib/apt/lists/*
 
 # [OPT] ── RTK (token-optimized CLI proxy) ──
 RUN curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/refs/heads/master/install.sh | RTK_INSTALL_DIR=/usr/local/bin sh

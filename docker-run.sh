@@ -67,6 +67,7 @@ if [ "${AI_AGENTS_MOUNT_JAVA_CACHE:-false}" = "true" ]; then
   OPTIONAL_JAVA_CACHE_VOL=(
     "-v" "$HOME/.m2/:/root/.m2:z"
     "-v" "$HOME/.gradle/gradle.properties:/root/.gradle/gradle.properties:z"
+    "-v" "$HOME/.gradle/caches:/root/.gradle/caches:z"
   )
 fi
 
